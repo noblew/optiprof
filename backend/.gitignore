@@ -1,0 +1,10 @@
+*.pyc
+.vscode/
+venv/
+__pycache__
+.DS_Store/
+migrations/
+.mypy_cache
+.pytest_cache
+test.db
+.env

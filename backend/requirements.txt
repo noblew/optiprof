@@ -1,0 +1,8 @@
+-i https://pypi.python.org/simple
+flask-cors>=3.0.6
+flask-script==2.0.6
+flask>=1.0.2
+gunicorn>=19.7.1
+pymongo==3.11.0
+dnspython==1.16.0
+pymysql==0.10.1
