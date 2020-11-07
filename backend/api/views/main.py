@@ -15,8 +15,9 @@ def index():
 def insert():
     data = request.json
     query = """
-        INSERT INTO Professor (name, department, rating_overall, rating_difficulty, rating_retake) VALUES ("{}", "{}", {}, {}, {});
+        INSERT INTO Professor (ID, name, department, rating_overall, rating_difficulty, rating_retake) VALUES ({}, "{}", "{}", {}, {}, {});
     """.format(
+        int(data['recordId']),
         data['name'], 
         data['department'], 
         float(data['overallRating']), 
@@ -50,6 +51,7 @@ def update():
 @main.route("/delete", methods=["DELETE"])
 def delete():
     deletion_id = request.json['recordId']
+    print(deletion_id)
     query = """
         DELETE FROM Professor WHERE ID = {}
     """.format(int(deletion_id))
@@ -61,9 +63,9 @@ def delete():
             return create_response(status=500, message="Something went wrong")
 
 
-@main.route("/search", methods=["GET"])
-def search():
-    prof_name = request.json['name']
+@main.route("/search/<name>", methods=["GET"])
+def search(name):
+    prof_name = name
     query = """
         SELECT * FROM Professor WHERE name LIKE "%{}%";
     """.format(prof_name)
