@@ -59,7 +59,6 @@ function App() {
 
   const watchDelete = deleteID => {
     setDeleteInput(deleteID)
-    console.log(deleteID)
   }
 
   const submitDelete = async (e) => {
