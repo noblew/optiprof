@@ -17,12 +17,22 @@ class Database:
 
     def connect(self):
         if self._sql:
-            self.db_driver = pymysql.connect(
-                self._uri, 
-                user=self._user, 
-                port=3306, 
-                password=self._password
-            )
+            try:
+                self.db_driver = pymysql.connect(
+                    self._uri, 
+                    user=self._user, 
+                    port=3306, 
+                    password=self._password,
+                    database="optiprof"
+                )
+            except:
+                # if the database doesn't exist yet, connect to base RDS 'console'
+                self.db_driver = pymysql.connect(
+                    self._uri, 
+                    user=self._user, 
+                    port=3306, 
+                    password=self._password,
+                ) 
         else:
             self.db_driver = pymongo.MongoClient(
                 "mongodb+srv://{}:{}@cluster0.m7ssr.mongodb.net/".format(

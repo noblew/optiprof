@@ -19,6 +19,19 @@ def runworker():
 
 
 @manager.command
+def recreate_db():
+    """
+    Drops existing database and data and creates a fresh database.
+    Note this should only be run once in production.
+    """
+    with sql_db.get_db().cursor() as cursor:
+        cursor.execute("""
+            DROP DATABASE IF EXISTS optiprof;
+        """)
+    
+    createschema()
+
+
 def createschema():
     """
     Creates SQL Schema in remote AWS instance. Uses existence checks
@@ -46,6 +59,27 @@ def createschema():
         """)
 
         cursor.execute("""
+            CREATE TABLE IF NOT EXISTS University (
+                name VARCHAR(255),
+                PRIMARY KEY (name)
+            );
+        """)
+
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS Course (
+                courseNumber INT,
+                university VARCHAR(255),
+                department VARCHAR(255),
+                name VARCHAR(255),
+                avgGPA REAL,
+                PRIMARY KEY (courseNumber, department),
+                FOREIGN KEY (university) REFERENCES University (name)
+                    ON DELETE SET NULL
+                    ON UPDATE CASCADE
+            );
+        """)
+
+        cursor.execute("""
             CREATE TABLE IF NOT EXISTS ProfessorGPA (
                 profID INT,
                 courseNumber INT,
@@ -55,16 +89,6 @@ def createschema():
                 FOREIGN KEY (courseNumber, courseDept) REFERENCES Course (courseNumber, department)
                     ON DELETE SET NULL
                     ON UPDATE CASCADE
-            );
-        """)
-
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS Course (
-                courseNumber INT,
-                department VARCHAR(255),
-                name VARCHAR(255),
-                avgGPA REAL,
-                PRIMARY KEY (courseNumber, department)
             );
         """)
 
@@ -89,6 +113,19 @@ def createschema():
             );
         """)
 
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS WorksFor (
+                university VARCHAR(255),
+                profID INT,
+                FOREIGN KEY (university) REFERENCES University (name)
+                    ON DELETE SET NULL
+                    ON UPDATE CASCADE,
+                FOREIGN KEY (profID) REFERENCES Professor (ID)
+                    ON DELETE SET NULL
+                    ON UPDATE CASCADE
+            );
+        """)
+
         # existence check for trigger
         cursor.execute("""
             DROP TRIGGER IF EXISTS gpaUpdate;
@@ -105,24 +142,12 @@ def createschema():
                         FROM Course c
                         WHERE c.courseNumber = new.courseNumber AND c.department = new.courseDept
                     )) THEN
-                        SET newAvg = SELECT AVG(profGPA * studentCount) FROM ProfessorGPA GROUP BY courseNumber, courseDept;
-                        UPDATE Course c SET avgGPA = newAvg WHERE c.courseNumber = new.courseNumber AND c.department = new.courseDept;
-                    END IF;
-                END;
-        """)
-
-        cursor.execute("""
-            CREATE TRIGGER gpaUpdate
-                AFTER UPDATE ON ProfessorGPA
-                    FOR EACH ROW
-                BEGIN
-                    DECLARE newAvg REAL DEFAULT 0.0;
-                    IF (EXISTS(
-                        SELECT c.courseNumber, c.department 
-                        FROM Course c
-                        WHERE c.courseNumber = new.courseNumber AND c.department = new.courseDept
-                    )) THEN
-                        SET newAvg = SELECT AVG(profGPA * studentCount) FROM ProfessorGPA GROUP BY courseNumber, courseDept;
+                        SET newAvg = (
+                            SELECT AVG(profGPA * studentCount) 
+                            FROM ProfessorGPA pgpa
+                            WHERE pgpa.courseNumber = new.courseNumber AND pgpa.courseDept = new.courseDept
+                            GROUP BY courseNumber, courseDept
+                        );
                         UPDATE Course c SET avgGPA = newAvg WHERE c.courseNumber = new.courseNumber AND c.department = new.courseDept;
                     END IF;
                 END;
