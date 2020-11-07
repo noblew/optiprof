@@ -41,35 +41,34 @@ const apiWrapper = {
         })
     },
 
-    async insertRecord() {
+    async insertRecord(data) {
         return requestWrapper({
             path: '/insert',
             method: 'POST',
-            data: {}
+            data: data
         })
     },
 
-    async updateRecord() {
+    async updateRecord(data) {
         return requestWrapper({
             path: '/update',
-            method: 'POST',
-            data: {}
+            method: 'PUT',
+            data: data
         })
     },
 
-    async deleteRecord() {
+    async deleteRecord(data) {
         return requestWrapper({
             path: '/delete',
-            method: 'POST',
-            data: {}
+            method: 'DELETE',
+            data:{ "recordId": data}
         })
     },
 
-    async searchRecords() {
+    async searchRecords(input) {
         return requestWrapper({
-            path: '/search',
-            method: 'GET',
-            data: {}
+            path: '/search/' + input,
+            method: 'GET'
         })
     }
 }
