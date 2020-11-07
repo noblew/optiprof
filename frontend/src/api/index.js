@@ -39,6 +39,38 @@ const apiWrapper = {
           path: '/',
           method: "GET"
         })
+    },
+
+    async insertRecord() {
+        return requestWrapper({
+            path: '/insert',
+            method: 'POST',
+            data: {}
+        })
+    },
+
+    async updateRecord() {
+        return requestWrapper({
+            path: '/update',
+            method: 'POST',
+            data: {}
+        })
+    },
+
+    async deleteRecord() {
+        return requestWrapper({
+            path: '/delete',
+            method: 'POST',
+            data: {}
+        })
+    },
+
+    async searchRecords() {
+        return requestWrapper({
+            path: '/search',
+            method: 'GET',
+            data: {}
+        })
     }
 }
 
