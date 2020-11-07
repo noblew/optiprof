@@ -1,3 +1,8 @@
+import requests
+import json
+import time
+import math
+import random
 
 def scrape_rmp_profs(school_name, sid, output_file, sleep_max = 0, write_output = False):
 
@@ -19,7 +24,6 @@ def scrape_rmp_profs(school_name, sid, output_file, sleep_max = 0, write_output 
         curr_req = requests.get(rmp_url)
         curr_page = json.loads(curr_req.content)
         proflist = proflist + curr_page["professors"]
-        print("got page ", page_idx)
         page_idx += 1
 
     if(write_output):
@@ -27,8 +31,3 @@ def scrape_rmp_profs(school_name, sid, output_file, sleep_max = 0, write_output 
             json.dump(proflist, outfile)
     
     return proflist
-            
-school_name = "University+Of+Illinois+at+Urbana+-+Champaign"
-sid = 1112
-
-profs = scrape_rmp_profs(school_name, sid, "rmp_data.json", sleep_max = 1, write_output = True)

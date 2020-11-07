@@ -8,3 +8,7 @@ migrations/
 .pytest_cache
 test.db
 .env
+
+# generated scraping output files
+output_file
+rmp_data_mini.json

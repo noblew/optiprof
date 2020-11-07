@@ -1,6 +1,7 @@
 from flask_script import Manager
 from api import create_app
 from api.models import mongo_db, sql_db
+from api.crawler import scrape_rmp_profs_mini
 
 # sets up the app
 app = create_app()
@@ -16,6 +17,35 @@ def runserver():
 @manager.command
 def runworker():
     app.run(debug=False)
+
+
+@manager.command
+def load_data():
+    school_name = "University+Of+Illinois+at+Urbana+-+Champaign"
+    sid = 1112
+    with sql_db.get_db().cursor() as cursor:
+        cursor.execute("""
+            INSERT INTO University VALUES ("University Of Illinois at Urbana - Champaign");
+        """)
+
+    profs = scrape_rmp_profs_mini(school_name, sid, "rmp_data_mini.json", sleep_max = 1.5, write_output = False)
+    tuple_prof_data = []
+    for prof in profs:
+        tuple_prof_data.append((
+            prof['tid'],
+            '{} {}'.format(prof['tFname'], prof['tLname']),
+            prof['tDept'],
+            prof['overall_rating'],
+            prof['difficulty'],
+            prof['would_take_again_pct']
+        ))
+    
+    stmt = """
+        INSERT INTO Professor (ID, name, department, rating_overall, rating_difficulty, rating_retake) 
+        VALUES (%s, %s, %s, %s, %s, %s)
+    """
+    with sql_db.get_db().cursor() as cursor:
+        cursor.executemany(stmt, tuple_prof_data)
 
 
 @manager.command

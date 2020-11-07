@@ -1,3 +1,11 @@
+import requests
+import json
+import time
+import math
+import random
+
+from bs4 import BeautifulSoup
+
 def scrape_rmp_profs_mini(school_name, sid, output_file, sleep_max = 1, write_output = False):
 
     #get first json object response with count of profs and output length per req
@@ -20,7 +28,7 @@ def scrape_rmp_profs_mini(school_name, sid, output_file, sleep_max = 1, write_ou
         curr_req = requests.get(rmp_url)
         curr_page = json.loads(curr_req.content)
         proflist = proflist + curr_page["professors"]
-        print("got page ", page_idx)
+        # print("got page ", page_idx)
         page_idx += 1
     
     #get additional prof attributes from individual prof pages
@@ -38,7 +46,7 @@ def scrape_rmp_profs_mini(school_name, sid, output_file, sleep_max = 1, write_ou
                 prof["would_take_again_pct"] = int(s.contents[0][:-1])
             else:
                 prof["difficulty"] = float(s.contents[0])
-        print("got prof ", prof["tLname"])
+        # print("got prof ", prof["tLname"])
 
     #write to output json file
     if(write_output):
@@ -47,7 +55,7 @@ def scrape_rmp_profs_mini(school_name, sid, output_file, sleep_max = 1, write_ou
     
     return proflist
 
-school_name = "University+Of+Illinois+at+Urbana+-+Champaign"
-sid = 1112
+# school_name = "University+Of+Illinois+at+Urbana+-+Champaign"
+# sid = 1112
 
-mini = scrape_rmp_profs_mini(school_name, sid, "rmp_data_mini.json", sleep_max = 1.5, write_output = True)
+# mini = scrape_rmp_profs_mini(school_name, sid, "rmp_data_mini.json", sleep_max = 1.5, write_output = True)
