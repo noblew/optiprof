@@ -23,7 +23,8 @@ class Database:
                     user=self._user, 
                     port=3306, 
                     password=self._password,
-                    database="optiprof"
+                    database="optiprof",
+                    autocommit=True
                 )
             except:
                 # if the database doesn't exist yet, connect to base RDS 'console'
@@ -32,6 +33,7 @@ class Database:
                     user=self._user, 
                     port=3306, 
                     password=self._password,
+                    autocommit=True
                 ) 
         else:
             self.db_driver = pymongo.MongoClient(
