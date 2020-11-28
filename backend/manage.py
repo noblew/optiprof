@@ -73,25 +73,59 @@ def load_courses():
         cursor.executemany(stmt, courses)
 
 
-# @manager.command
-# def load_prof_gpas():
-#     prof_gpas = scrape_prof_gpas('api/crawler/uiuc-gpa-dataset.csv')
-#     with sql_db.get_db().cursor() as cursor:
-#         cursor.execute("""
-#             DROP TEMPORARY TABLE IF EXISTS ProfTemp;
-#         """)
+@manager.command
+def load_prof_gpas():
+    # reformat response to insert into temporary table
+    prof_gpas = scrape_prof_gpas('api/crawler/uiuc-gpa-dataset.csv')
+    reformatted_prof_gpas = []
+    for cnum, cdept, csem, cinstructor, cgpa in prof_gpas:
+        reformatted_prof_gpas.append(cinstructor, cnum, cdept, csem, cgpa)
 
-#         cursor.execute("""
-#             CREATE TEMPORARY TABLE IF NOT EXISTS ProfTemp (
-#                 name VARCHAR(255),
-#                 courseNum INT,
-#                 courseDept VARCHAR(255),
-#                 cumulativeGPA REAL,
-#                 PRIMARY KEY(name)
-#             );
-#         """)
+    with sql_db.get_db().cursor() as cursor:
+        cursor.execute("""
+            DROP TEMPORARY TABLE IF EXISTS ProfTemp;
+        """)
 
-        
+        cursor.execute("""
+            CREATE TEMPORARY TABLE IF NOT EXISTS ProfTemp (
+                name VARCHAR(255),
+                courseNum INT,
+                courseDept VARCHAR(255),
+                courseSem VARCHAR(255),
+                cumulativeGPA REAL,
+                PRIMARY KEY(name)
+            );
+        """)
+
+    stmt = """
+        INSERT INTO ProfTemp (name, courseNum, courseDept, courseSem, cumulativeGPA)
+        VALUES (%s, %s, %s, %s, %s)
+    """
+
+    with sql_db.get_db().cursor() as cursor:
+        cursor.executemany(stmt, reformatted_prof_gpas)
+        cursor.execute("""
+            DROP TEMPORARY TABLE IF EXISTS pgpa_joined;
+        """)  
+
+        # join with professor table to get the professor id
+        cursor.execute("""
+            CREATE TEMPORARY TABLE IF NOT EXISTS pgpa_joined
+            SELECT 
+                p.ID as ID, 
+                p.name as name, 
+                pgpa.courseNum as courseNum,
+                pgpa.courseDept as courseDept,
+                pgpa.courseSem as courseSem,
+                pgpa.cumulativeGPA as cumulativeGPA
+            FROM Professor p JOIN ProfTemp pgpa ON p.name = pgpa.name;
+        """)
+
+        cursor.execute("""
+            INSERT INTO ProfessorGPA (profID, courseNumber, courseDept, semesterTerm, profGPA)
+            SELECT ID, courseNum, courseDept, courseSem, cumulativeGPA
+            FROM pgpa_joined;
+        """)
 
 
 @manager.command
@@ -208,6 +242,7 @@ def createschema():
             DROP TRIGGER IF EXISTS gpaUpdate;
         """)
 
+        # after insert, write SQL query to figure out average after group by
         cursor.execute("""
             CREATE TRIGGER gpaInsert
                 AFTER INSERT ON ProfessorGPA
