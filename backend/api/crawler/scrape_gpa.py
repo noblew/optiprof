@@ -39,11 +39,20 @@ def scrape_prof_gpas(dataset_path):
         for row in csv_reader:
             # if professor exists
             if row[20]:
-                # course num, course department/subject, semester/term, instructor
-                meta_data = row[4], row[3], row[2], row[20], calculate_gpa(row[6:19])
+                # course num, course department/subject, semester/term, instructor, gpa
+                meta_data = row[4], row[3], row[2], parse_prof_name(row[20]), calculate_gpa(row[6:19])
                 prof_data.append(meta_data)
         
-        return prof_data
+        # calculate cumulative professor gpas if professor has taught the same course multiple times
+        prof_sorted_data = sorted(prof_data, key=lambda x: (x[3], x[0], x[1], x[2]))
+        return calculate_prof_gpa(prof_sorted_data)
+
+
+def parse_prof_name(full_name):
+    split_name = full_name.split(', ')
+    last_name = split_name[0]
+    first_name = split_name[1].split(' ')[0]
+    return '{} {}'.format(first_name, last_name)
 
 
 def calculate_gpa(gpa_arr):
@@ -53,3 +62,53 @@ def calculate_gpa(gpa_arr):
         total_gpa_hrs += ct * gpa_idx_map[idx]
     
     return round(total_gpa_hrs / sum(int_gpa_arr), 2)
+
+
+def calculate_prof_gpa(sorted_gpa_arr):
+    result = []
+
+    # consolidate gpas of professors that have taught the same course multiple times a semester
+    idx = 0
+    while idx < len(sorted_gpa_arr):
+        result.append(sorted_gpa_arr[idx])
+        it_idx = idx + 1
+        if idx >= len(sorted_gpa_arr) - 1:
+            break
+
+        while it_idx < len(sorted_gpa_arr):
+            onum, odept, osem, oinstructor, ogpa = result[-1]
+            cnum, cdept, csem, cinstructor, cgpa = sorted_gpa_arr[it_idx]
+
+            # if current course and professor is the same, add the gpas together
+            if cnum == onum and odept == cdept and osem == csem and oinstructor == cinstructor:
+                result[-1] = (onum, odept, osem, oinstructor, ogpa + cgpa)
+            else:
+                idx = it_idx
+                break
+
+            it_idx += 1
+        
+        if it_idx >= len(sorted_gpa_arr):
+            break
+    
+    # total count of the number of times a professor has taught a course
+    prof_course_ct = {}
+    for cnum, cdept, csem, cinstructor, _ in sorted_gpa_arr:
+        key = (cnum, cdept, csem, cinstructor)
+        if key in prof_course_ct:
+            prof_course_ct[key] += 1
+        else:
+            prof_course_ct[key] = 1
+
+    # calculate final average gpa
+    for i in range(len(result)):
+        cnum, cdept, csem, cinstructor, cgpa = result[i]
+        result[i] = (
+            cnum, 
+            cdept, 
+            csem, 
+            cinstructor, 
+            round(cgpa / prof_course_ct[(cnum, cdept, csem, cinstructor)], 2)
+        )
+    
+    return result

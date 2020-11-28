@@ -73,6 +73,27 @@ def load_courses():
         cursor.executemany(stmt, courses)
 
 
+# @manager.command
+# def load_prof_gpas():
+#     prof_gpas = scrape_prof_gpas('api/crawler/uiuc-gpa-dataset.csv')
+#     with sql_db.get_db().cursor() as cursor:
+#         cursor.execute("""
+#             DROP TEMPORARY TABLE IF EXISTS ProfTemp;
+#         """)
+
+#         cursor.execute("""
+#             CREATE TEMPORARY TABLE IF NOT EXISTS ProfTemp (
+#                 name VARCHAR(255),
+#                 courseNum INT,
+#                 courseDept VARCHAR(255),
+#                 cumulativeGPA REAL,
+#                 PRIMARY KEY(name)
+#             );
+#         """)
+
+        
+
+
 @manager.command
 def recreate_db():
     """
