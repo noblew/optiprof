@@ -255,7 +255,7 @@ def createschema():
                         WHERE c.courseNumber = new.courseNumber AND c.department = new.courseDept AND c.semesterTerm = new.semesterTerm
                     )) THEN
                         SET newAvg = (
-                            SELECT AVG(profGPA * courseCount) 
+                            SELECT AVG(profGPA) 
                             FROM ProfessorGPA pgpa
                             WHERE pgpa.courseNumber = new.courseNumber AND pgpa.courseDept = new.courseDept AND pgpa.semesterTerm = new.semesterTerm
                             GROUP BY courseNumber, courseDept, semesterTerm
