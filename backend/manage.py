@@ -51,13 +51,13 @@ def load_profs():
 
 @manager.command
 def test_select():
-    # query = "SELECT * FROM Professor;"
-    # with sql_db.get_db().cursor() as cursor:
-    #     cursor.execute(query)
-    #     results = cursor.fetchall()
-    #     print(len(results), results)
-    res = scrape_prof_gpas('api/crawler/uiuc-gpa-dataset.csv')
-    print(res)
+    query = "SELECT * FROM Professor;"
+    with sql_db.get_db().cursor() as cursor:
+        cursor.execute(query)
+        results = cursor.fetchall()
+        print(len(results), results)
+    # res = scrape_prof_gpas('api/crawler/uiuc-gpa-dataset.csv')
+    # print(res)
 
 
 @manager.command
@@ -138,13 +138,6 @@ def recreate_db():
         # cursor.execute("""
         #     DROP DATABASE IF EXISTS optiprof;
         # """)
-        cursor.execute("""
-            DROP TABLE IF EXISTS University;
-        """)
-
-        cursor.execute("""
-            DROP TABLE IF EXISTS Course;
-        """)
 
         cursor.execute("""
             DROP TABLE IF EXISTS ProfessorGPA;
@@ -155,11 +148,19 @@ def recreate_db():
         """)
 
         cursor.execute("""
-            DROP TABLE IF EXISTS Teaches;
+            DROP TABLE IF EXISTS Course;
         """)
 
         cursor.execute("""
             DROP TABLE IF EXISTS WorksFor;
+        """)
+
+        cursor.execute("""
+            DROP TABLE IF EXISTS University;
+        """)
+
+        cursor.execute("""
+            DROP TABLE IF EXISTS Teaches;
         """)
     
     createschema()
