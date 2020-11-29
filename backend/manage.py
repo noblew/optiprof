@@ -135,8 +135,31 @@ def recreate_db():
     Note this should only be run once in production.
     """
     with sql_db.get_db().cursor() as cursor:
+        # cursor.execute("""
+        #     DROP DATABASE IF EXISTS optiprof;
+        # """)
         cursor.execute("""
-            DROP DATABASE IF EXISTS optiprof;
+            DROP TABLE IF EXISTS University;
+        """)
+
+        cursor.execute("""
+            DROP TABLE IF EXISTS Course;
+        """)
+
+        cursor.execute("""
+            DROP TABLE IF EXISTS ProfessorGPA;
+        """)
+
+        cursor.execute("""
+            DROP TABLE IF EXISTS Section;
+        """)
+
+        cursor.execute("""
+            DROP TABLE IF EXISTS Teaches;
+        """)
+
+        cursor.execute("""
+            DROP TABLE IF EXISTS WorksFor;
         """)
     
     createschema()
