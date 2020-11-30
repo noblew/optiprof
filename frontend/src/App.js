@@ -14,7 +14,11 @@ import {
   NavItem,
   NavLink,
   TabContent,
-  TabPane
+  TabPane,
+  Dropdown,
+  DropdownToggle,
+  DropdownMenu,
+  DropdownItem
 } from 'reactstrap'
 import classnames from 'classnames';
 
@@ -122,7 +126,34 @@ function App() {
           {/* Visualization of historical GPA */}
           <Row>
             <Col>
-              <h3 className="mt-4 mb-4">Visualize Historical GPAs</h3>
+              <h3 className="mt-4 mb-4">Visualize Historical Data</h3>
+            </Col>
+          </Row>
+
+          <Row>
+            <Col md="10">
+              <Form>
+                <FormGroup>
+                  <InputGroup>
+                    <Input placeholder="Search..."/>
+                    <InputGroupAddon addonType="append">
+                      <Button color="primary" type="submit">Search</Button>
+                    </InputGroupAddon>
+                  </InputGroup>
+                </FormGroup>
+              </Form>
+            </Col>
+            <Col md="2">
+              <Dropdown>
+                <DropdownToggle caret>
+                  Category...
+                </DropdownToggle>
+                <DropdownMenu>
+                  <DropdownItem>Department</DropdownItem>
+                  <DropdownItem>Course</DropdownItem>
+                  <DropdownItem>Professor</DropdownItem>
+                </DropdownMenu>
+              </Dropdown>
             </Col>
           </Row>
 
