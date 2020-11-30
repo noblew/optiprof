@@ -127,6 +127,14 @@ def load_prof_gpas():
             FROM pgpa_joined;
         """)
 
+        cursor.execute("""
+            DROP TEMPORARY TABLE IF EXISTS pgpa_joined;
+        """)
+
+        cursor.execute("""
+            DROP TEMPORARY TABLE IF EXISTS ProfTemp;
+        """)
+
 
 @manager.command
 def recreate_db():
