@@ -92,7 +92,7 @@ def load_prof_gpas():
                 courseDept VARCHAR(255),
                 courseSem VARCHAR(255),
                 cumulativeGPA REAL,
-                PRIMARY KEY(name)
+                PRIMARY KEY(name, courseNum, courseDept, courseSem)
             );
         """)
 
@@ -139,15 +139,7 @@ def recreate_db():
         # """)
 
         cursor.execute("""
-            DROP TABLE IF EXISTS ProfessorGPA;
-        """)
-
-        cursor.execute("""
             DROP TABLE IF EXISTS Section;
-        """)
-
-        cursor.execute("""
-            DROP TABLE IF EXISTS Course;
         """)
 
         cursor.execute("""
@@ -217,6 +209,9 @@ def createschema():
                 semesterTerm VARCHAR(255),
                 courseName VARCHAR(255),
                 profGPA REAL,
+                FOREIGN KEY (profID) REFERENCES Professor (ID)
+                    ON DELETE SET NULL
+                    ON UPDATE CASCADE,
                 FOREIGN KEY (courseNumber, courseDept, semesterTerm, courseName) REFERENCES Course (courseNumber, department, semesterTerm, name)
                     ON DELETE SET NULL
                     ON UPDATE CASCADE
