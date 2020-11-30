@@ -78,7 +78,7 @@ def load_prof_gpas():
     prof_gpas = scrape_prof_gpas('api/crawler/uiuc-gpa-dataset.csv')
     reformatted_prof_gpas = []
     for cnum, cdept, csem, cinstructor, cgpa in prof_gpas:
-        reformatted_prof_gpas.append(cinstructor, cnum, cdept, csem, cgpa)
+        reformatted_prof_gpas.append((cinstructor, cnum, cdept, csem, cgpa))
 
     with sql_db.get_db().cursor() as cursor:
         cursor.execute("""
@@ -144,6 +144,10 @@ def recreate_db():
 
         cursor.execute("""
             DROP TABLE IF EXISTS Section;
+        """)
+
+        cursor.execute("""
+            DROP TABLE IF EXISTS Course;
         """)
 
         cursor.execute("""
