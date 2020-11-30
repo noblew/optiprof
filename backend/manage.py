@@ -51,11 +51,11 @@ def load_profs():
 
 @manager.command
 def test_select():
-    query = "SELECT * FROM Course;"
+    query = "SELECT * FROM ProfessorGPA LIMIT 100;"
     with sql_db.get_db().cursor() as cursor:
         cursor.execute(query)
         results = cursor.fetchall()
-        print(results, len(results))
+        print(results)
     # res = scrape_prof_gpas('api/crawler/uiuc-gpa-dataset.csv')
     # print(res)
 
@@ -77,8 +77,8 @@ def load_prof_gpas():
     # reformat response to insert into temporary table
     prof_gpas = scrape_prof_gpas('api/crawler/uiuc-gpa-dataset.csv')
     reformatted_prof_gpas = []
-    for cnum, cdept, csem, cinstructor, cgpa in prof_gpas:
-        reformatted_prof_gpas.append((cinstructor, cnum, cdept, csem, cgpa))
+    for cnum, cdept, csem, cinstructor, title, cgpa in prof_gpas:
+        reformatted_prof_gpas.append((cinstructor, cnum, cdept, csem, title, cgpa))
 
     with sql_db.get_db().cursor() as cursor:
         cursor.execute("""
@@ -91,14 +91,14 @@ def load_prof_gpas():
                 courseNum INT,
                 courseDept VARCHAR(255),
                 courseSem VARCHAR(255),
-                cumulativeGPA REAL,
-                PRIMARY KEY(name, courseNum, courseDept, courseSem)
+                courseName VARCHAR(255),
+                cumulativeGPA REAL
             );
         """)
 
     stmt = """
-        INSERT INTO ProfTemp (name, courseNum, courseDept, courseSem, cumulativeGPA)
-        VALUES (%s, %s, %s, %s, %s)
+        INSERT INTO ProfTemp (name, courseNum, courseDept, courseSem, courseName, cumulativeGPA)
+        VALUES (%s, %s, %s, %s, %s, %s)
     """
 
     with sql_db.get_db().cursor() as cursor:
@@ -116,13 +116,14 @@ def load_prof_gpas():
                 pgpa.courseNum as courseNum,
                 pgpa.courseDept as courseDept,
                 pgpa.courseSem as courseSem,
+                pgpa.courseName as courseName,
                 pgpa.cumulativeGPA as cumulativeGPA
             FROM Professor p JOIN ProfTemp pgpa ON p.name = pgpa.name;
         """)
 
         cursor.execute("""
-            INSERT INTO ProfessorGPA (profID, courseNumber, courseDept, semesterTerm, profGPA)
-            SELECT ID, courseNum, courseDept, courseSem, cumulativeGPA
+            INSERT INTO ProfessorGPA (profID, courseNumber, courseDept, semesterTerm, courseName, profGPA)
+            SELECT ID, courseNum, courseDept, courseSem, courseName, cumulativeGPA
             FROM pgpa_joined;
         """)
 
