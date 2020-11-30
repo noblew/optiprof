@@ -21,13 +21,13 @@ def scrape_courses(dataset_path, university):
         csv_reader = csv.reader(dataset, delimiter=',')
         next(csv_reader) # skip header
 
-        course_data = []
+        course_data = set()
         for row in csv_reader:
             # course num, university name, course department/subject, semester/term, title, avg GPA 
             meta_data = row[4], university, row[3], row[2], row[5], 0.0
-            course_data.append(meta_data)
+            course_data.add(meta_data)
 
-        return course_data
+        return list(course_data)
 
 
 def scrape_prof_gpas(dataset_path):

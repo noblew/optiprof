@@ -46,7 +46,7 @@ def scrape_rmp_profs(school_name, sid, output_file, sleep_max = 1, write_output 
                 prof["would_take_again_pct"] = int(s.contents[0][:-1])
             else:
                 prof["difficulty"] = float(s.contents[0])
-        # print("got prof ", prof["tLname"])
+        print("got prof ", prof["tLname"])
 
     #write to output json file
     if(write_output):

@@ -29,7 +29,7 @@ def load_profs():
         """)
 
     # profs = scrape_rmp_profs_mini(school_name, sid, "rmp_data_mini.json", sleep_max = 1.5, write_output = False)
-    profs = scrape_rmp_profs(school_name, sid, "rmp_data.json", sleep_max = 1.5, write_output = False)
+    profs = scrape_rmp_profs(school_name, sid, "rmp_data.json", sleep_max = 1.25, write_output = False)
     tuple_prof_data = []
     for prof in profs:
         tuple_prof_data.append((
@@ -51,11 +51,11 @@ def load_profs():
 
 @manager.command
 def test_select():
-    query = "SELECT * FROM Professor;"
+    query = "SELECT * FROM Course;"
     with sql_db.get_db().cursor() as cursor:
         cursor.execute(query)
         results = cursor.fetchall()
-        print(len(results), results)
+        print(results, len(results))
     # res = scrape_prof_gpas('api/crawler/uiuc-gpa-dataset.csv')
     # print(res)
 
@@ -63,10 +63,9 @@ def test_select():
 @manager.command
 def load_courses():
     courses = scrape_courses('api/crawler/uiuc-gpa-dataset.csv', 'University of Illinois at Urbana - Champaign')
-    courses = list(set(courses))
 
     stmt = """
-        INSERT INTO Course (courseNumber, university, department, semesterTerm, name, avgGPA)
+        INSERT IGNORE INTO Course (courseNumber, university, department, semesterTerm, name, avgGPA)
         VALUES (%s, %s, %s, %s, %s, %s)
     """
     with sql_db.get_db().cursor() as cursor:
@@ -148,15 +147,7 @@ def recreate_db():
         """)
 
         cursor.execute("""
-            DROP TABLE IF EXISTS Course;
-        """)
-
-        cursor.execute("""
             DROP TABLE IF EXISTS WorksFor;
-        """)
-
-        cursor.execute("""
-            DROP TABLE IF EXISTS University;
         """)
 
         cursor.execute("""
@@ -207,7 +198,7 @@ def createschema():
                 semesterTerm VARCHAR(255),
                 name VARCHAR(255),
                 avgGPA REAL,
-                PRIMARY KEY (courseNumber, department, semesterTerm),
+                PRIMARY KEY (courseNumber, department, semesterTerm, name),
                 FOREIGN KEY (university) REFERENCES University (name)
                     ON DELETE SET NULL
                     ON UPDATE CASCADE
@@ -220,8 +211,9 @@ def createschema():
                 courseNumber INT,
                 courseDept VARCHAR(255),
                 semesterTerm VARCHAR(255),
+                courseName VARCHAR(255),
                 profGPA REAL,
-                FOREIGN KEY (courseNumber, courseDept, semesterTerm) REFERENCES Course (courseNumber, department, semesterTerm)
+                FOREIGN KEY (courseNumber, courseDept, semesterTerm, courseName) REFERENCES Course (courseNumber, department, semesterTerm, name)
                     ON DELETE SET NULL
                     ON UPDATE CASCADE
             );
@@ -231,10 +223,13 @@ def createschema():
             CREATE TABLE IF NOT EXISTS Section (
                 sectionID INT,
                 courseNumber INT,
+                courseDept VARCHAR(255),
+                semesterTerm VARCHAR(255),
+                courseName VARCHAR(255),
                 startTime TIME,
                 endTime TIME,
                 PRIMARY KEY (sectionID),
-                FOREIGN KEY (courseNumber) REFERENCES Course (courseNumber)
+                FOREIGN KEY (courseNumber, courseDept, semesterTerm, courseName) REFERENCES Course (courseNumber, department, semesterTerm, name)
                     ON DELETE SET NULL
                     ON UPDATE CASCADE
             );
