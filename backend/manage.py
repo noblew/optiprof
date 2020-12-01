@@ -59,6 +59,14 @@ def test_select():
     # res = scrape_prof_gpas('api/crawler/uiuc-gpa-dataset.csv')
     # print(res)
 
+@manager.command
+def test_select_section():
+    query = "SELECT * FROM Section WHERE courseNumber = 411 AND courseDept = 'CS';"
+    with sql_db.get_db().cursor() as cursor:
+        cursor.execute(query)
+        results = cursor.fetchall()
+        print(results)
+
 
 @manager.command
 def load_courses():
@@ -138,15 +146,70 @@ def load_prof_gpas():
 @manager.command
 def load_sections():
 
-    sections = scrape_sections('api/crawler/2020-fa.csv')
+    sections = scrape_sections('api/crawler/2020-sp.csv')
+
+    with sql_db.get_db().cursor() as cursor:
+        cursor.execute("""
+            DROP TEMPORARY TABLE IF EXISTS SectionTemp;
+        """)
+
+        cursor.execute("""
+            CREATE TEMPORARY TABLE IF NOT EXISTS SectionTemp (
+                sectionID INT,
+                courseNumber INT,
+                courseDept VARCHAR(255),
+                semesterTerm VARCHAR(255),
+                courseName VARCHAR(255),
+                startTime VARCHAR(255),
+                endTime VARCHAR(255),
+                daysOfWeek VARCHAR(255),
+                instructor VARCHAR(255)
+            );
+        """)
 
     stmt = """ 
-        INSERT IGNORE INTO Section (sectionID, courseNumber, courseDept, semesterTerm, courseName, startTime, endTime, daysOfWeek, instructor)
+        INSERT INTO SectionTemp (sectionID, courseNumber, courseDept, semesterTerm, courseName, startTime, endTime, daysOfWeek, instructor)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
     """
+
     with sql_db.get_db().cursor() as cursor:
         cursor.executemany(stmt, sections)
+        cursor.execute("""
+            DROP TEMPORARY TABLE IF EXISTS sec_crs_joined;
+        """)
 
+        cursor.execute("""
+            CREATE TEMPORARY TABLE IF NOT EXISTS sec_crs_joined
+            SELECT 
+                Stemp.sectionID as sectionID, 
+                C.courseNumber as courseNumber, 
+                C.department as courseDept,
+                C.semesterTerm as semesterTerm,
+                C.name as courseName,
+                Stemp.startTime as startTime,
+                Stemp.endTime as endTime,
+                Stemp.daysOfWeek as daysOfWeek,
+                Stemp.instructor as instructor
+            FROM Course C JOIN SectionTemp Stemp ON 
+                C.semesterTerm = Stemp.semesterTerm AND
+                C.name = Stemp.courseName AND
+                C.department = Stemp.courseDept AND
+                C.courseNumber = Stemp.courseNumber;
+        """)
+
+        cursor.execute("""
+            INSERT IGNORE INTO Section (sectionID, courseNumber, courseDept, semesterTerm, courseName, startTime, endTime, daysOfWeek, instructor)
+            SELECT sectionID, courseNumber, courseDept, semesterTerm, courseName, startTime, endTime, daysOfWeek, instructor
+            FROM sec_crs_joined;
+        """)
+
+        cursor.execute("""
+            DROP TEMPORARY TABLE IF EXISTS sec_crs_joined;
+        """)
+
+        cursor.execute("""
+            DROP TEMPORARY TABLE IF EXISTS SectionTemp;
+        """)
 
 @manager.command
 def recreate_db():
@@ -159,9 +222,9 @@ def recreate_db():
         #     DROP DATABASE IF EXISTS optiprof;
         # """)
 
-        cursor.execute("""
-            DROP TABLE IF EXISTS Section;
-        """)
+        # cursor.execute("""
+        #     DROP TABLE IF EXISTS Section;
+        # """)
 
         cursor.execute("""
             DROP TABLE IF EXISTS WorksFor;
