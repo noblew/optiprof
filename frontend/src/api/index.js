@@ -70,6 +70,21 @@ const apiWrapper = {
             path: '/search/' + input,
             method: 'GET'
         })
+    },
+
+    async vizData(category, input) {
+      return requestWrapper({
+        path: '/gpadata/' + category + '/' + input,
+        method: 'GET'
+      })
+    },
+
+    async optimizeData(category, courses) {
+      return requestWrapper({
+        path: '/schedule/' + category,
+        method: 'POST',
+        data: {"courses": JSON.stringify(courses)}
+      })
     }
 }
 

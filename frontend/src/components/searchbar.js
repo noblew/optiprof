@@ -8,7 +8,7 @@ import {
     Button
 } from 'reactstrap'
 
-const SearchBar = ({submitCallback, btnColor='primary'}) => {
+const SearchBar = ({submitCallback, btnColor="primary", btnText="Search", placeholderTxt="Search..."}) => {
     const [searchInput, setSearchInput] = useState("")
 
     const watchSearch = searchVal => {
@@ -24,9 +24,9 @@ const SearchBar = ({submitCallback, btnColor='primary'}) => {
         <Form onSubmit={submitSearch}>
             <FormGroup>
                 <InputGroup>
-                <Input placeholder="Search..." onChange={e => {watchSearch(e.target.value)}}/>
+                <Input placeholder={placeholderTxt} onChange={e => {watchSearch(e.target.value)}}/>
                 <InputGroupAddon addonType="append">
-                    <Button color={btnColor} type="submit">Search</Button>
+                    <Button color={btnColor} type="submit">{btnText}</Button>
                 </InputGroupAddon>
                 </InputGroup>
             </FormGroup>

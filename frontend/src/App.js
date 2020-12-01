@@ -6,28 +6,26 @@ import {
   Form,
   FormGroup,
   Label,
-  InputGroup,
-  InputGroupAddon,
   Input,
   Button,
   Nav,
   NavItem,
   NavLink,
   TabContent,
-  TabPane,
-  Dropdown,
-  DropdownToggle,
-  DropdownMenu,
-  DropdownItem
+  TabPane
 } from 'reactstrap'
 import classnames from 'classnames';
 
-import { SearchBar } from './components'
+import { DropdownSelector, SearchBar } from './components'
 import apiWrapper from './api'
+import { vizDataHandler } from './util'
 
 function App() {
+  const [activeTab, setActiveTab] = useState('1');
+  const [vizCategory, setVizCategory] = useState("Category...")
+  const [optimizeCategory, setOptimizeCategory] = useState("Optimize On...")
+  const [vizData, setVizData] = useState({})
   const [searchProfResults, setSearchProfResults] = useState([])
-
   const [insertInput, setInsertInput] = useState({
     recordId: null,
     name: null,
@@ -37,18 +35,22 @@ function App() {
     overallRetake: 0.0
   })
 
-  const [deleteInput, setDeleteInput] = useState(0)
-
   const [updateInput, setUpdateInput] = useState({
     recordId: null,
     key: null,
     newVal: null
   })
 
-  const [activeTab, setActiveTab] = useState('1');
-
   const toggleTab = tab => {
     if(activeTab !== tab) setActiveTab(tab);
+  }
+
+  const updateVizCategory = (selectedVal) => {
+    setVizCategory(selectedVal)
+  }
+
+  const updateOptimizeCategory = (selectedVal) => {
+    setOptimizeCategory(selectedVal)
   }
 
   const submitProfSearch = async (searchVal) => {
@@ -68,13 +70,8 @@ function App() {
     await apiWrapper.insertRecord(insertInput)
   }
 
-  const watchDelete = deleteID => {
-    setDeleteInput(deleteID)
-  }
-
-  const submitDelete = async (e) => {
-    e.preventDefault()
-    await apiWrapper.deleteRecord(deleteInput)
+  const submitDelete = async (deleteVal) => {
+    await apiWrapper.deleteRecord(parseInt(deleteVal, 10))
   }
 
   const watchUpdate = evt => {
@@ -90,7 +87,19 @@ function App() {
   }
 
   const searchViz = async (searchVal) => {
-    console.log(searchVal)
+    const vizCategoryStore = vizCategory
+    if (vizCategoryStore !== 'Category...') {
+      let fetched = await apiWrapper.vizData(vizCategoryStore, searchVal)
+      const retData = fetched.data.result.data
+      vizDataHandler(retData)
+    }
+  }
+
+  const optimizerSubmit = async (courses) => {
+    const optCategory = optimizeCategory
+    if (optCategory !== 'Optimize On...') {
+      console.log(courses)
+    }
   }
 
   return (
@@ -133,16 +142,7 @@ function App() {
               <SearchBar submitCallback={searchViz}/>
             </Col>
             <Col md="2">
-              <Dropdown>
-                <DropdownToggle caret>
-                  Category...
-                </DropdownToggle>
-                <DropdownMenu>
-                  <DropdownItem>Department</DropdownItem>
-                  <DropdownItem>Course</DropdownItem>
-                  <DropdownItem>Professor</DropdownItem>
-                </DropdownMenu>
-              </Dropdown>
+              <DropdownSelector optionsList={['department', 'course', 'professor']} defaultText="Category..." selectCallback={updateVizCategory}/>
             </Col>
           </Row>
 
@@ -150,6 +150,14 @@ function App() {
           <Row>
             <Col>
               <h3 className="mt-4 mb-4">Schedule Optimizer</h3>
+            </Col>
+          </Row>
+          <Row>
+            <Col md="10">
+              <SearchBar submitCallback={optimizerSubmit} btnText='Optimize' placeholderTxt="Optimize Courses (Dept + Number, ...)"/>
+            </Col>
+            <Col md="2">
+              <DropdownSelector optionsList={['quality', 'difficulty', 'gpa', 'all']} defaultText="Optimize On..." selectCallback={updateOptimizeCategory}/>
             </Col>
           </Row>
         </TabPane>
@@ -227,16 +235,7 @@ function App() {
           </Row>
           <Row>
             <Col>
-              <Form onSubmit={submitDelete}>
-                <FormGroup>
-                  <InputGroup>
-                    <Input onChange={e => {watchDelete(e.target.value)}}/>
-                    <InputGroupAddon addonType="append">
-                      <Button color="danger" type="submit">Delete</Button>
-                    </InputGroupAddon>
-                  </InputGroup>
-                </FormGroup>
-              </Form>
+              <SearchBar submitCallback={submitDelete} btnColor="danger" btnText="Delete"/>
             </Col>
           </Row>
 
