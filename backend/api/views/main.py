@@ -88,7 +88,7 @@ def search(name):
         return create_response(data={"data": serialized_results})
 
 
-@main.route("/gpadata/<category>/<name>")
+@main.route("/gpadata/<category>/<name>", methods=["GET"])
 def gpadata(category, name):
     if category == 'department':
         query = """
