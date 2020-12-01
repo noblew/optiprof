@@ -166,9 +166,11 @@ def gpadata(category, name):
 
 def generate_schedule(desired_courses, criteria):
     # make flaas from criteria
-    int prof_quality
-    int prof_difficulty
-    int course_gpa
+    prof_quality = 1
+    prof_difficulty = 1
+    course_gpa = 1
+
+    optimal_schedule = []
 
     for desired_course in desired_courses:
         query = """
@@ -200,6 +202,7 @@ def generate_schedule(desired_courses, criteria):
                         cursor.execute(query)
                         results = cursor.fetchall()
                         criteria_rating += results[0][0] - results[0][1] # add the overall rating which is good, and subtract the difficulty which is bad
+                
                 augmented_results.append((res, criteria_rating))
-
-
+                augmented_results.sort(key = lambda x: x[1])
+                optimal_schedule.append(augmented_results[0][0])
