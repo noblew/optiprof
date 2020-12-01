@@ -87,12 +87,7 @@ def search(name):
 
         return create_response(data={"data": serialized_results})
 
-<<<<<<< HEAD
-
 @main.route("/gpadata/<category>/<name>", methods=["GET"])
-=======
-@main.route("/gpadata/<category>/<name>")
->>>>>>> 16ffb5831253d429280991d588d27a3f5b5ced89
 def gpadata(category, name):
     if category == 'department':
         query = """
@@ -207,4 +202,4 @@ def generate_schedule(desired_courses, criteria):
                         criteria_rating += results[0][0] - results[0][1] # add the overall rating which is good, and subtract the difficulty which is bad
                 augmented_results.append((res, criteria_rating))
 
-                
+
