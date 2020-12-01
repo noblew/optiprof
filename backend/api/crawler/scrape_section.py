@@ -5,12 +5,14 @@ def scrape_sections(csv_path):
         csv_reader = csv.reader(data, delimiter = ',')
         next(csv_reader)
 
-        sections = []
-        for row in csv_reader:
-            section_data = row[11], row[4], row[3], row[1], row[5], row[21], row[22], row[23], row[26]
-            sections.append(section_data)
+        sections = set()
 
-        return sections
+        for row in csv_reader:
+            section_data = row[11], row[4], row[3], row[2], row[5], row[18], row[19], row[20], row[23]
+            sections.add(section_data)
+
+        print(len(sections), " sections from data added")
+        return list(sections)
 
         
 """
@@ -31,18 +33,15 @@ CSV SCHEMA
 12   Section
 13   Status Code
 14   Part of Term
-15   Section Title
-16   Section Credit Hours
-17   Section Status
-18   Enrollment Status
-19   Type
-20   Type Code
-21   Start Time
-22   End Time
-23   Days of Week
-24   Room
-25   Building
-26   Instructors
+15   Section Status
+16   Enrollment Status
+17   Type
+18   Start Time
+19   End Time
+20   Days of Week
+21   Room
+22   Building
+23   Instructors
 """
 
 """
@@ -56,4 +55,5 @@ courseName VARCHAR(255),
 startTime VARCHAR(255),
 endTime VARCHAR(255),
 daysOfWeek VARCHAR(255),
+instructor VARCHAR(255)
 """
