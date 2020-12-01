@@ -172,7 +172,7 @@ def generate_schedule(desired_courses, criteria):
 
     for desired_course in desired_courses:
         query = """
-            SELECT * FROM Section WHERE courseNumber = "%{}%" and courseDept = "%{}%";
+            SELECT * FROM Section WHERE courseNumber = "{}" and courseDept = "{}";
         """.format(COURSE NUMBER FROM DESIRED COURSE, COURSE DEPARTMENT)
         
         with sql_db.get_db().cursor() as cursor:
@@ -184,14 +184,22 @@ def generate_schedule(desired_courses, criteria):
                 criteria_rating = 0
                 if course_gpa:
                     query = """
-                        SELECT avgGPA FROM Courses WHERE courseNumber = "%{}%" and department = "%{}%";
-                    """
+                        SELECT avgGPA FROM Courses WHERE courseNumber = "{}" and department = "{}";
+                    """.format(res[1], res[2])
+                    
                     with sql_db.get_db().cursor() as cursor:
                         cursor.execute(query)
                         results = cursor.fetchall()
                         criteria_rating += results[0]
                 if prof_quality or prof_difficulty:
                     query = """
-                        SELECT * FROM Professor WHERE name = 
-                    """.format
-                augmented_results.append((res, ))
+                        SELECT rating_overall, rating_difficulty FROM Professor WHERE ID = (SELECT profID FROM Teaches WHERE sectionID = "{}");
+                    """.format(res[0])
+                    
+                    with sql_db.get_db().cursor() as cursor:
+                        cursor.execute(query)
+                        results = cursor.fetchall()
+                        criteria_rating += results[0][0] - results[0][1] # add the overall rating which is good, and subtract the difficulty which is bad
+                augmented_results.append((res, criteria_rating))
+
+                
