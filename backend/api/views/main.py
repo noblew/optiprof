@@ -86,3 +86,80 @@ def search(name):
             })
 
         return create_response(data={"data": serialized_results})
+
+
+@main.route("/gpadata/<category>/<name>")
+def gpadata(category, name):
+    if category == 'department':
+        query = """
+            SELECT courseNumber, semesterTerm, name, avgGPA 
+            FROM Course
+            WHERE department = '{}' AND avgGPA > 0.0
+        """.format(name)
+
+        with sql_db.get_db().cursor() as cursor:
+            cursor.execute(query)
+            results = cursor.fetchall()
+
+            serialized_results = []
+            for res in results:
+                serialized_results.append({
+                    "courseNumber": res[0],
+                    "semesterTerm": res[1],
+                    "name": res[2],
+                    "avgGPA": res[3]
+                })
+
+            return create_response(data={"data": serialized_results})
+    elif category == 'course':
+        query = """
+            SELECT pgpa.courseNumber, pgpa.courseName, pgpa.semesterTerm, p.name, pgpa.profGPA
+            FROM ProfessorGPA pgpa JOIN Professor p ON pgpa.profID = p.ID
+            WHERE pgpa.courseName = '{}'
+        """.format(name)
+
+        with sql_db.get_db().cursor() as cursor:
+            cursor.execute(query)
+            results = cursor.fetchall()
+
+            serialized_results = []
+            for res in results:
+                serialized_results.append({
+                    "courseNumber": res[0],
+                    "courseName": res[1],
+                    "semesterTerm": res[2],
+                    "name": res[3],
+                    "avgGPA": res[4]
+                })
+
+            return create_response(data={"data": serialized_results})
+    elif category == 'professor':
+        query = """
+            SELECT p.name, c.courseNumber, c.department, c.name, c.semesterTerm, c.avgGPA 
+            FROM Professor p
+            JOIN ProfessorGPA pgpa 
+                ON p.ID = pgpa.profID
+                AND p.name = '{}'
+            JOIN Course c
+                ON pgpa.courseNumber = c.courseNumber
+                AND pgpa.courseDept = c.department
+                AND pgpa.semesterTerm = c.semesterTerm
+                AND pgpa.courseName = c.name
+        """.format(name)
+
+        with sql_db.get_db().cursor() as cursor:
+            cursor.execute(query)
+            results = cursor.fetchall()
+
+            serialized_results = []
+            for res in results:
+                serialized_results.append({
+                    "professorName": res[0],
+                    "courseNumber": res[1],
+                    "department": res[2],
+                    "courseName": res[3],
+                    "semesterTerm": res[4],
+                    "avgGPA": res[5]
+                })
+
+            return create_response(data={"data": serialized_results})
