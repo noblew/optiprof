@@ -22,11 +22,11 @@ import {
 } from 'reactstrap'
 import classnames from 'classnames';
 
+import { SearchBar } from './components'
 import apiWrapper from './api'
 
 function App() {
-  const [searchInput, setSearchInput] = useState("")
-  const [searchResults, setSearchResults] = useState([])
+  const [searchProfResults, setSearchProfResults] = useState([])
 
   const [insertInput, setInsertInput] = useState({
     recordId: null,
@@ -51,14 +51,9 @@ function App() {
     if(activeTab !== tab) setActiveTab(tab);
   }
 
-  const watchSearch = searchVal => {
-    setSearchInput(searchVal)
-  }
-
-  const submitSearch = async (e) => {
-    e.preventDefault()
-    let fetched = await apiWrapper.searchRecords(searchInput)
-    setSearchResults(fetched.data.result.data)
+  const submitProfSearch = async (searchVal) => {
+    let fetched = await apiWrapper.searchRecords(searchVal)
+    setSearchProfResults(fetched.data.result.data)
   }
 
   const watchInsert = evt => {
@@ -92,6 +87,10 @@ function App() {
   const submitUpdate = async (e) => {
     e.preventDefault()
     await apiWrapper.updateRecord(updateInput)
+  }
+
+  const searchViz = async (searchVal) => {
+    console.log(searchVal)
   }
 
   return (
@@ -129,19 +128,9 @@ function App() {
               <h3 className="mt-4 mb-4">Visualize Historical Data</h3>
             </Col>
           </Row>
-
           <Row>
             <Col md="10">
-              <Form>
-                <FormGroup>
-                  <InputGroup>
-                    <Input placeholder="Search..."/>
-                    <InputGroupAddon addonType="append">
-                      <Button color="primary" type="submit">Search</Button>
-                    </InputGroupAddon>
-                  </InputGroup>
-                </FormGroup>
-              </Form>
+              <SearchBar submitCallback={searchViz}/>
             </Col>
             <Col md="2">
               <Dropdown>
@@ -259,22 +248,13 @@ function App() {
           </Row>
           <Row>
             <Col>
-              <Form onSubmit={submitSearch}>
-                <FormGroup>
-                  <InputGroup>
-                    <Input onChange={e => {watchSearch(e.target.value)}}/>
-                    <InputGroupAddon addonType="append">
-                      <Button color="primary" type="submit">Search</Button>
-                    </InputGroupAddon>
-                  </InputGroup>
-                </FormGroup>
-              </Form>
+              <SearchBar submitCallback={submitProfSearch}/>
             </Col>
           </Row>
 
           <Row>
             <Col>
-              {searchResults && searchResults.map(prof => {
+              {searchProfResults && searchProfResults.map(prof => {
                 return <div key={prof.id}>
                   <h5>{prof.name}</h5>
                   <ul>

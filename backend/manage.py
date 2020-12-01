@@ -266,7 +266,7 @@ def createschema():
 
         # existence check for trigger
         cursor.execute("""
-            DROP TRIGGER IF EXISTS gpaUpdate;
+            DROP TRIGGER IF EXISTS gpaInsert;
         """)
 
         # after insert, write SQL query to figure out average after group by

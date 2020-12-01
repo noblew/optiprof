@@ -115,7 +115,7 @@ def gpadata(category, name):
         query = """
             SELECT pgpa.courseNumber, pgpa.courseName, pgpa.semesterTerm, p.name, pgpa.profGPA
             FROM ProfessorGPA pgpa JOIN Professor p ON pgpa.profID = p.ID
-            WHERE pgpa.courseName = '{}'
+            WHERE pgpa.courseName = '{}' AND pgpa.profGPA > 0.0
         """.format(name)
 
         with sql_db.get_db().cursor() as cursor:
@@ -145,6 +145,7 @@ def gpadata(category, name):
                 AND pgpa.courseDept = c.department
                 AND pgpa.semesterTerm = c.semesterTerm
                 AND pgpa.courseName = c.name
+                AND c.avgGPA > 0.0
         """.format(name)
 
         with sql_db.get_db().cursor() as cursor:
