@@ -92,9 +92,10 @@ def search(name):
 def gpadata(category, name):
     if category == 'department':
         query = """
-            SELECT courseNumber, semesterTerm, name, avgGPA 
+            SELECT courseNumber, department, name, AVG(avgGPA) 
             FROM Course
             WHERE department = '{}' AND avgGPA > 0.0
+            GROUP BY courseNumber, department, name
         """.format(name)
 
         with sql_db.get_db().cursor() as cursor:
