@@ -24,7 +24,8 @@ function App() {
   const [activeTab, setActiveTab] = useState('1');
   const [vizCategory, setVizCategory] = useState("Category...")
   const [optimizeCategory, setOptimizeCategory] = useState("Optimize On...")
-  const [vizData, setVizData] = useState({})
+  const [vizData, setVizData] = useState(null)
+  const [categoryStore, setCategoryStore] = useState('')
   const [searchProfResults, setSearchProfResults] = useState([])
   const [insertInput, setInsertInput] = useState({
     recordId: null,
@@ -91,7 +92,9 @@ function App() {
     if (vizCategoryStore !== 'Category...') {
       let fetched = await apiWrapper.vizData(vizCategoryStore, searchVal)
       const retData = fetched.data.result.data
-      vizDataHandler(retData)
+      const plotData = vizDataHandler(retData, vizCategoryStore)
+      setVizData(plotData)
+      setCategoryStore(vizCategoryStore)
     }
   }
 
