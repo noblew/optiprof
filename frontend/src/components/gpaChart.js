@@ -42,10 +42,11 @@ const GPAChart = ({ gpaData, criteria }) => {
                 <Col>
                     <ScatterChart width={600} height={250} data={gpaData}>
                         <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis type="number" domain={[0, 600]}/>
+                        {/* <XAxis type="number" domain={[0, 600]}/> */}
+                        <XAxis dataKey="courseNumber" type="number" domain={[0, 600]}/>
                         <YAxis dataKey="avgGPA"/>
                         <Tooltip />
-                        <Scatter data={gpaData} fill="#82ca9d"/>
+                        <Scatter name="Courses" data={gpaData} fill="#82ca9d"/>
                     </ScatterChart>
                 </Col>
             </Row>
