@@ -1,6 +1,7 @@
 from flask import Blueprint, request
 from api.models import sql_db, mongo_db
 from api.core import create_response, serialize_list
+import json
 
 main = Blueprint("main", __name__)  # initialize blueprint
 
@@ -164,7 +165,13 @@ def gpadata(category, name):
 
             return create_response(data={"data": serialized_results})
 
-def generate_schedule(desired_courses, criteria):
+
+@main.route("/schedule/<criteria>", methods=["POST"])
+def generate_schedule(criteria):
+    # parse course list into a string of comma separated courses
+    desired_courses = request.json.get('courses', '')
+    print(desired_courses)
+
     # make flaas from criteria
     prof_quality = 1
     prof_difficulty = 1

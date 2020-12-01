@@ -98,7 +98,7 @@ function App() {
   const optimizerSubmit = async (courses) => {
     const optCategory = optimizeCategory
     if (optCategory !== 'Optimize On...') {
-      console.log(courses)
+      let fetched = await apiWrapper.optimizeData(optCategory, courses)
     }
   }
 

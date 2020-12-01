@@ -80,10 +80,11 @@ const apiWrapper = {
     },
 
     async optimizeData(category, courses) {
+      console.log(courses, JSON.stringify(courses))
       return requestWrapper({
         path: '/schedule/' + category,
         method: 'POST',
-        data: {"courses": JSON.stringify(courses)}
+        data: {"courses": courses}
       })
     }
 }
