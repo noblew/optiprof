@@ -1,7 +1,7 @@
 import csv
 
 def scrape_sections(csv_path):
-    with open(csv_path, 'r') as data:
+    with open(csv_path, 'r',  encoding="utf8") as data:
         csv_reader = csv.reader(data, delimiter = ',')
         next(csv_reader)
 
