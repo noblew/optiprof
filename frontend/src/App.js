@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Container,
   Row,
@@ -16,16 +16,15 @@ import {
 } from 'reactstrap'
 import classnames from 'classnames';
 
-import { DropdownSelector, SearchBar } from './components'
+import { DropdownSelector, GPAChart, SearchBar } from './components'
 import apiWrapper from './api'
 import { vizDataHandler } from './util'
 
 function App() {
   const [activeTab, setActiveTab] = useState('1');
   const [vizCategory, setVizCategory] = useState("Category...")
-  const [optimizeCategory, setOptimizeCategory] = useState("Optimize On...")
   const [vizData, setVizData] = useState(null)
-  const [categoryStore, setCategoryStore] = useState('')
+  const [optimizeCategory, setOptimizeCategory] = useState("Optimize On...")
   const [searchProfResults, setSearchProfResults] = useState([])
   const [insertInput, setInsertInput] = useState({
     recordId: null,
@@ -42,12 +41,15 @@ function App() {
     newVal: null
   })
 
+  useEffect(() => {}, [vizData])
+
   const toggleTab = tab => {
     if(activeTab !== tab) setActiveTab(tab);
   }
 
   const updateVizCategory = (selectedVal) => {
     setVizCategory(selectedVal)
+    setVizData(null)
   }
 
   const updateOptimizeCategory = (selectedVal) => {
@@ -88,13 +90,11 @@ function App() {
   }
 
   const searchViz = async (searchVal) => {
-    const vizCategoryStore = vizCategory
-    if (vizCategoryStore !== 'Category...') {
-      let fetched = await apiWrapper.vizData(vizCategoryStore, searchVal)
+    if (vizCategory !== 'Category...') {
+      let fetched = await apiWrapper.vizData(vizCategory, searchVal)
       const retData = fetched.data.result.data
-      const plotData = vizDataHandler(retData, vizCategoryStore)
+      const plotData = vizDataHandler(retData, vizCategory)
       setVizData(plotData)
-      setCategoryStore(vizCategoryStore)
     }
   }
 
@@ -148,6 +148,7 @@ function App() {
               <DropdownSelector optionsList={['department', 'course', 'professor']} defaultText="Category..." selectCallback={updateVizCategory}/>
             </Col>
           </Row>
+          <GPAChart gpaData={vizData} criteria={vizCategory}/>
 
           {/* Schedule Optimizer */}
           <Row>

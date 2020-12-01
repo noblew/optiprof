@@ -1,6 +1,5 @@
 function vizDataHandler(resultData, criteria) {
     let vizDict = {}
-    console.log(resultData)
     for (let i = 0; i < resultData.length; i++) {
         if (criteria === 'department') {
             // no need to edit; resultData is a list of dictionaries to create a scatterplot
