@@ -1,7 +1,7 @@
 from flask_script import Manager
 from api import create_app
 from api.models import mongo_db, sql_db
-from api.crawler import scrape_rmp_profs_mini, scrape_rmp_profs, scrape_courses, scrape_prof_gpas
+from api.crawler import scrape_rmp_profs_mini, scrape_rmp_profs, scrape_courses, scrape_prof_gpas, scrape_sections
 
 # sets up the app
 app = create_app()
@@ -135,6 +135,18 @@ def load_prof_gpas():
             DROP TEMPORARY TABLE IF EXISTS ProfTemp;
         """)
 
+@manager.command
+def load_sections():
+
+    sections = scrape_sections('api/crawler/2020-fa.csv')
+
+    stmt = """ 
+        INSERT IGNORE INTO Section (sectionID, courseNumber, courseDept, semesterTerm, courseName, startTime, endTime, daysOfWeek, instructor)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+    """
+    with sql_db.get_db().cursor() as cursor:
+        cursor.executemany(stmt, sections)
+
 
 @manager.command
 def recreate_db():
@@ -234,8 +246,10 @@ def createschema():
                 courseDept VARCHAR(255),
                 semesterTerm VARCHAR(255),
                 courseName VARCHAR(255),
-                startTime TIME,
-                endTime TIME,
+                startTime VARCHAR(255),
+                endTime VARCHAR(255),
+                daysOfWeek VARCHAR(255),
+                instructor VARCHAR(255),
                 PRIMARY KEY (sectionID),
                 FOREIGN KEY (courseNumber, courseDept, semesterTerm, courseName) REFERENCES Course (courseNumber, department, semesterTerm, name)
                     ON DELETE SET NULL
