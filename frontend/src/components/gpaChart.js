@@ -15,6 +15,8 @@ import {
     Col
 } from 'reactstrap'
 
+import CustomTooltip from './customTooltip'
+
 const GPAChart = ({ gpaData, criteria }) => {
     if (gpaData === null || criteria === null) {
         return <Row></Row>
@@ -29,7 +31,7 @@ const GPAChart = ({ gpaData, criteria }) => {
                             <CartesianGrid strokeDasharray="3 3" />
                             <XAxis dataKey="semesterTerm"/>
                             <YAxis dataKey="avgGPA"/>
-                            <Tooltip />
+                            <Tooltip content={<CustomTooltip/>}/>
                             <Line type="monotone" dataKey="avgGPA" stroke="#82ca9d"/>
                         </LineChart>
                     </Col>
@@ -42,10 +44,9 @@ const GPAChart = ({ gpaData, criteria }) => {
                 <Col>
                     <ScatterChart width={600} height={250} data={gpaData}>
                         <CartesianGrid strokeDasharray="3 3" />
-                        {/* <XAxis type="number" domain={[0, 600]}/> */}
                         <XAxis dataKey="courseNumber" type="number" domain={[0, 600]}/>
                         <YAxis dataKey="avgGPA"/>
-                        <Tooltip />
+                        <Tooltip content={<CustomTooltip/>}/>
                         <Scatter name="Courses" data={gpaData} fill="#82ca9d"/>
                     </ScatterChart>
                 </Col>
