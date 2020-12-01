@@ -87,7 +87,6 @@ def search(name):
 
         return create_response(data={"data": serialized_results})
 
-
 @main.route("/gpadata/<category>/<name>")
 def gpadata(category, name):
     if category == 'department':
@@ -164,3 +163,35 @@ def gpadata(category, name):
                 })
 
             return create_response(data={"data": serialized_results})
+
+def generate_schedule(desired_courses, criteria):
+    # make flaas from criteria
+    int prof_quality
+    int prof_difficulty
+    int course_gpa
+
+    for desired_course in desired_courses:
+        query = """
+            SELECT * FROM Section WHERE courseNumber = "%{}%" and courseDept = "%{}%";
+        """.format(COURSE NUMBER FROM DESIRED COURSE, COURSE DEPARTMENT)
+        
+        with sql_db.get_db().cursor() as cursor:
+            cursor.execute(query)
+            results = cursor.fetchall()
+
+            augmented_results = []
+            for res in results:
+                criteria_rating = 0
+                if course_gpa:
+                    query = """
+                        SELECT avgGPA FROM Courses WHERE courseNumber = "%{}%" and department = "%{}%";
+                    """
+                    with sql_db.get_db().cursor() as cursor:
+                        cursor.execute(query)
+                        results = cursor.fetchall()
+                        criteria_rating += results[0]
+                if prof_quality or prof_difficulty:
+                    query = """
+                        SELECT * FROM Professor WHERE name = 
+                    """.format
+                augmented_results.append((res, ))
