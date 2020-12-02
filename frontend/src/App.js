@@ -107,7 +107,12 @@ function App() {
 
   const submitUpdate = async (e) => {
     e.preventDefault()
-    await apiWrapper.updateRecord(updateInput)
+    let fetched = await apiWrapper.updateRecord(updateInput)
+    if (fetched.data.status === 200) {
+      notify("Successfully updated professor")
+    } else {
+      notify("Failed to update")
+    }
   }
 
   const searchViz = async (searchVal) => {
