@@ -11,7 +11,7 @@ function vizDataHandler(resultData, criteria) {
             // professor
             let key = resultData[i]['department'] + ' ' + resultData[i]['courseNumber'].toString(10)
             if (!(key in vizDict)) {
-                vizDict[key] = []
+                vizDict[key] = [resultData[i]]
             } else {
                 vizDict[key].push(resultData[i])
             }
