@@ -314,7 +314,6 @@ def generate_schedule(criteria):
         course_info = desired_course.split(' ')
         department = course_info[0]
         course_number = course_info[1]
-        # print(course_info)
         query = """
             SELECT * FROM Section WHERE courseNumber = {} and courseDept = "{}";
         """.format(int(course_number), department)
@@ -322,41 +321,53 @@ def generate_schedule(criteria):
         with sql_db.get_db().cursor() as cursor:
             cursor.execute(query)
             results = cursor.fetchall()
-            # print(results)
 
             augmented_results = []
             for res in results:
-                # print(res)
                 criteria_rating = 0
-                if course_gpa:
-                    query = """
-                        SELECT AVG(profGPA) FROM ProfessorGPA WHERE courseNumber = {} and courseDept = "{}" and profID = (SELECT profID FROM Teaches WHERE sectionID = {});
-                    """.format(int(res[1]), res[2], int(res[0]))
 
-                    with sql_db.get_db().cursor() as cursor2:
-                        cursor2.execute(query)
-                        results2 = cursor2.fetchall()
-                        criteria_rating += results2[0][0]
-                        # print("After course gpa: " + str(criteria_rating))
+                query = """
+                    SELECT profID FROM Teaches WHERE sectionID = {}
+                """.format(int(res[0]))
 
-                if prof_quality or prof_difficulty:
-                    query = """
-                        SELECT rating_overall, rating_difficulty FROM Professor WHERE ID = (SELECT profID FROM Teaches WHERE sectionID = {});
-                    """.format(int(res[0]))
+                with sql_db.get_db().cursor() as cursor3:
+                    cursor3.execute(query)
+                    results3 = cursor3.fetchall()
+
+                    if not results3:
+                        continue
                     
-                    with sql_db.get_db().cursor() as cursor2:
-                        cursor2.execute(query)
-                        results2 = cursor2.fetchall()
+                    profID = int(results3[0][0])
 
-                        if prof_quality:
+                    if course_gpa:
+                        query = """
+                            SELECT AVG(profGPA) FROM ProfessorGPA WHERE courseNumber = {} and courseDept = "{}" and profID = {};
+                        """.format(int(res[1]), res[2], profID)
+
+                        with sql_db.get_db().cursor() as cursor2:
+                            cursor2.execute(query)
+                            results2 = cursor2.fetchall()
                             criteria_rating += results2[0][0]
-                            # print("After prof quality: " + str(criteria_rating))
-                        if prof_difficulty:
-                            criteria_rating -= results2[0][1]
-                            # print("After prof difficulty: " + str(criteria_rating))
+
+                    if prof_quality or prof_difficulty:
+                        query = """
+                            SELECT rating_overall, rating_difficulty FROM Professor WHERE ID = {};
+                        """.format(profID)
+                        
+                        with sql_db.get_db().cursor() as cursor2:
+                            cursor2.execute(query)
+                            results2 = cursor2.fetchall()
+
+                            if prof_quality:
+                                criteria_rating += results2[0][0]
+                            if prof_difficulty and results2[0][1] >= 0:
+                                criteria_rating -= results2[0][1]
                 
                 augmented_results.append((res, criteria_rating))
             
+            if not augmented_results:
+                continue
+
             augmented_results.sort(key = lambda x: x[1])
 
             i = 0
@@ -364,7 +375,7 @@ def generate_schedule(criteria):
                 if day_overlap(conflict_times[i][2], augmented_results[0][0][7]) and time_overlap(conflict_times[i][0], conflict_times[i][1], augmented_results[0][0][5], augmented_results[0][0][6]):
                     augmented_results.pop(0)
                     if not augmented_results:
-                        return []
+                        return create_response(data={"data": []})
                     i = 0
                 i += 1
 
