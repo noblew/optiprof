@@ -370,16 +370,21 @@ def generate_schedule(criteria):
 
             augmented_results.sort(key = lambda x: x[1])
 
-            i = 0
-            while i < len(conflict_times):
-                if day_overlap(conflict_times[i][2], augmented_results[0][0][7]) and time_overlap(conflict_times[i][0], conflict_times[i][1], augmented_results[0][0][5], augmented_results[0][0][6]):
-                    augmented_results.pop(0)
-                    if not augmented_results:
-                        return create_response(data={"data": []})
-                    i = 0
-                i += 1
+            found_section = True
 
-            optimal_schedule.append(augmented_results[0][0][0])
-            conflict_times.append((augmented_results[0][0][5], augmented_results[0][0][6], augmented_results[0][0][7]))
+            if augmented_results[0][0][5] != "ARRANGED":
+                i = 0
+                while i < len(conflict_times):
+                    if day_overlap(conflict_times[i][2], augmented_results[0][0][7]) and time_overlap(conflict_times[i][0], conflict_times[i][1], augmented_results[0][0][5], augmented_results[0][0][6]):
+                        augmented_results.pop(0)
+                        if not augmented_results:
+                            found_section = False
+                            break
+                        i = 0
+                    i += 1
+                conflict_times.append((augmented_results[0][0][5], augmented_results[0][0][6], augmented_results[0][0][7]))
+
+            if found_section:
+                optimal_schedule.append(augmented_results[0][0][0])
 
     return create_response(data={"data": optimal_schedule})
