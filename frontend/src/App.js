@@ -169,6 +169,7 @@ function App() {
     const keyList = fetched.data.result.data
     if (keyList.length === 0) {
       notify("No schedules containing CRN found")
+      setSchedContaining(null)
     } else {
       setSchedContaining(keyList)
     }
