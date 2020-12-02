@@ -80,11 +80,17 @@ const apiWrapper = {
     },
 
     async optimizeData(category, courses) {
-      console.log(courses, JSON.stringify(courses))
       return requestWrapper({
         path: '/schedule/' + category,
         method: 'POST',
         data: {"courses": courses}
+      })
+    },
+
+    async getCRNData(crn) {
+      return requestWrapper({
+        path: '/getSection/' + crn,
+        method: 'GET' 
       })
     }
 }

@@ -16,7 +16,7 @@ import {
 } from 'reactstrap'
 import classnames from 'classnames';
 
-import { DropdownSelector, GPAChart, SearchBar } from './components'
+import { DropdownSelector, GPAChart, SearchBar, CourseCard } from './components'
 import apiWrapper from './api'
 import { vizDataHandler } from './util'
 
@@ -25,6 +25,8 @@ function App() {
   const [vizCategory, setVizCategory] = useState("Category...")
   const [vizData, setVizData] = useState(null)
   const [optimizeCategory, setOptimizeCategory] = useState("Optimize On...")
+  const [optimizedSched, setOptimizedSched] = useState(null)
+  const [optimizedFull, setOptimizedFull] = useState(null)
   const [searchProfResults, setSearchProfResults] = useState([])
   const [insertInput, setInsertInput] = useState({
     recordId: null,
@@ -102,8 +104,24 @@ function App() {
     const optCategory = optimizeCategory
     if (optCategory !== 'Optimize On...') {
       let fetched = await apiWrapper.optimizeData(optCategory, courses)
+      const crnList = fetched.data.result.data
+      setOptimizedSched(crnList)
+      loadSchedData(crnList)
     }
   }
+
+  const loadSchedData = async (crns) => {
+    let fullCRNData = []
+    for (let i = 0; i < crns.length; i++) {
+      let fetched = await apiWrapper.getCRNData(crns[i])
+      fullCRNData.push(fetched.data.result.data)
+    }
+    setOptimizedFull(fullCRNData)
+  }
+
+  const optimizerSave = async (courses) => {
+    return null
+  }  
 
   return (
     <Container>
@@ -164,6 +182,20 @@ function App() {
               <DropdownSelector optionsList={['quality', 'difficulty', 'gpa', 'all']} defaultText="Optimize On..." selectCallback={updateOptimizeCategory}/>
             </Col>
           </Row>
+          {optimizedFull !== null ? <Row className="mb-4">
+            {optimizedFull.map((course, idx) => {
+              return (
+                <Col key={idx}>
+                  <CourseCard crnData={course}/>
+                </Col>
+              )
+            })}
+          </Row> : null}
+          {optimizedSched !== null ? <Row>
+            <Col>
+              <SearchBar submitCallback={optimizerSave} btnText='Save' placeholderTxt="Save schedule as..." />
+            </Col>
+          </Row> : null}
         </TabPane>
 
         <TabPane tabId="2">

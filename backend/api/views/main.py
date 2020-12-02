@@ -167,7 +167,7 @@ def gpadata(category, name):
 
             return create_response(data={"data": serialized_results})
 
-@main.route('/getSection/<crn>')
+@main.route('/getSection/<crn>', methods=["GET"])
 def get_section(crn):
     query = """
         SELECT 
@@ -185,22 +185,20 @@ def get_section(crn):
 
     with sql_db.get_db().cursor() as cursor:
         cursor.execute(query)
-        results = cursor.fetchall()
+        results = cursor.fetchall()[0]
 
-        serialized_results = []
-        for res in results:
-            serialized_results.append({
-                "crn": res[0],
-                "courseNumber": res[1],
-                "department": res[2],
-                "semesterTerm": res[3],
-                "courseName": res[4],
-                "startTime": res[5],
-                "endTime": res[6],
-                "professorName": res[7]
-            })
+        serialized_result = {
+                "crn": results[0],
+                "courseNumber": results[1],
+                "department": results[2],
+                "semesterTerm": results[3],
+                "courseName": results[4],
+                "startTime": results[5],
+                "endTime": results[6],
+                "professorName": results[7]
+            }
 
-        return create_response(data={"data": serialized_results})
+        return create_response(data={"data": serialized_result})
 
 def day_overlap(first, second):
     for day in first:
@@ -226,7 +224,6 @@ def time_overlap(firstStart, firstEnd, secondStart, secondEnd):
 @main.route("/schedule/<criteria>", methods=["POST"])
 def generate_schedule(criteria):
     # parse course list into a string of comma separated courses
-    print("starting")
     desired_courses = request.json.get('courses', '').split(',')
 
     # make flaas from criteria
@@ -256,8 +253,6 @@ def generate_schedule(criteria):
         query = """
             SELECT * FROM Section WHERE courseNumber = {} and courseDept = "{}";
         """.format(int(course_number), department)
-
-        print(query)
         
         with sql_db.get_db().cursor() as cursor:
             cursor.execute(query)
@@ -298,10 +293,7 @@ def generate_schedule(criteria):
                 augmented_results.append((res, criteria_rating))
             
             augmented_results.sort(key = lambda x: x[1])
-            print(augmented_results)
-            print(len(conflict_times))
 
-            print("conflict checking")
             i = 0
             while i < len(conflict_times):
                 if day_overlap(conflict_times[i][2], augmented_results[0][0][7]) and time_overlap(conflict_times[i][0], conflict_times[i][1], augmented_results[0][0][5], augmented_results[0][0][6]):
@@ -311,12 +303,7 @@ def generate_schedule(criteria):
                     i = 0
                 i += 1
 
-            print("passed conflict")
             optimal_schedule.append(augmented_results[0][0][0])
             conflict_times.append((augmented_results[0][0][5], augmented_results[0][0][6], augmented_results[0][0][7]))
-            # print(optimal_schedule)
-            # print(conflict_times)
 
-    print("yay done!")
-    print(optimal_schedule)
     return create_response(data={"data": optimal_schedule})
