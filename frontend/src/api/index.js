@@ -88,10 +88,11 @@ const apiWrapper = {
     },
 
     async saveSchedule(key, courses) {
+      let crnString = JSON.stringify(courses)
       return requestWrapper({
         path: '/saveschedule/' + key,
         method: 'POST',
-        data: {"crns": JSON.stringify(courses)}
+        data: {"crns": crnString.slice(1, crnString.length - 1)}
       })
     },
 
