@@ -36,11 +36,19 @@ def insert():
 @main.route("/update", methods=["PUT"])
 def update():
     data = request.json
-    query = """
-        UPDATE Professor
-        SET {} = {}
-        WHERE ID = {}
-    """.format(data['key'], data['newVal'], int(data['recordId']))
+    
+    if type(data['newVal']) == type(''):
+        query = """
+            UPDATE Professor
+            SET {} = '{}'
+            WHERE ID = {}
+        """.format(data['key'], data['newVal'], int(data['recordId']))
+    else:
+        query = """
+            UPDATE Professor
+            SET {} = {}
+            WHERE ID = {}
+        """.format(data['key'], data['newVal'], int(data['recordId']))
 
     with sql_db.get_db().cursor() as cursor:
         if cursor.execute(query):
@@ -91,7 +99,7 @@ def search(name):
 @main.route("/saveschedule/<sched_name>", methods=["POST"])
 def savesched(sched_name):
     data = request.json
-    crn_strs = data['crns'].split(', ')
+    crn_strs = data['crns'].split(',')
     
     crns = []
     for c in crn_strs:
