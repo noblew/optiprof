@@ -87,6 +87,14 @@ const apiWrapper = {
       })
     },
 
+    async saveSchedule(key, courses) {
+      return requestWrapper({
+        path: '/saveschedule/' + key,
+        method: 'POST',
+        data: {"crns": courses}
+      })
+    },
+
     async getCRNData(crn) {
       return requestWrapper({
         path: '/getSection/' + crn,

@@ -119,9 +119,11 @@ function App() {
     setOptimizedFull(fullCRNData)
   }
 
-  const optimizerSave = async (courses) => {
-    return null
-  }  
+  const optimizerSave = async (key) => {
+    // console.log(JSON.stringify(optimizedSched))
+    let fetched = await apiWrapper.saveSchedule(key, optimizedSched)
+    console.log(fetched)
+  } 
 
   return (
     <Container>
