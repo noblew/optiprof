@@ -190,6 +190,7 @@ def time_overlap(firstStart, firstEnd, secondStart, secondEnd):
 @main.route("/schedule/<criteria>", methods=["POST"])
 def generate_schedule(criteria):
     # parse course list into a string of comma separated courses
+    print("starting")
     desired_courses = request.json.get('courses', '').split(',')
 
     # make flaas from criteria
@@ -201,7 +202,7 @@ def generate_schedule(criteria):
         prof_quality = 1
     elif criteria == "difficulty":
         prof_difficulty = 1
-    elif criteria == "gpa"
+    elif criteria == "gpa":
         course_gpa = 1
     else:
         prof_quality = 1
@@ -212,31 +213,40 @@ def generate_schedule(criteria):
     conflict_times = []
 
     for desired_course in desired_courses:
+        course_info = desired_course.split(' ')
+        department = course_info[0]
+        course_number = course_info[1]
+        # print(course_info)
         query = """
-            SELECT * FROM Section WHERE courseNumber = "{}" and courseDept = "{}";
-        """.format(COURSE NUMBER FROM DESIRED COURSE, COURSE DEPARTMENT)
+            SELECT * FROM Section WHERE courseNumber = {} and courseDept = "{}";
+        """.format(int(course_number), department)
+
+        print(query)
         
         with sql_db.get_db().cursor() as cursor:
             cursor.execute(query)
             results = cursor.fetchall()
+            # print(results)
 
             augmented_results = []
             for res in results:
+                # print(res)
                 criteria_rating = 0
                 if course_gpa:
                     query = """
-                        SELECT avgGPA FROM Courses WHERE courseNumber = "{}" and department = "{}";
-                    """.format(res[1], res[2])
-                    
+                        SELECT AVG(profGPA) FROM ProfessorGPA WHERE courseNumber = {} and courseDept = "{}" and profID = (SELECT profID FROM Teaches WHERE sectionID = {});
+                    """.format(int(res[1]), res[2], int(res[0]))
+
                     with sql_db.get_db().cursor() as cursor2:
                         cursor2.execute(query)
                         results2 = cursor2.fetchall()
-                        criteria_rating += results2[0]
+                        criteria_rating += results2[0][0]
+                        # print("After course gpa: " + str(criteria_rating))
 
                 if prof_quality or prof_difficulty:
                     query = """
-                        SELECT rating_overall, rating_difficulty FROM Professor WHERE ID = (SELECT profID FROM Teaches WHERE sectionID = "{}");
-                    """.format(res[0])
+                        SELECT rating_overall, rating_difficulty FROM Professor WHERE ID = (SELECT profID FROM Teaches WHERE sectionID = {});
+                    """.format(int(res[0]))
                     
                     with sql_db.get_db().cursor() as cursor2:
                         cursor2.execute(query)
@@ -244,23 +254,33 @@ def generate_schedule(criteria):
 
                         if prof_quality:
                             criteria_rating += results2[0][0]
+                            # print("After prof quality: " + str(criteria_rating))
                         if prof_difficulty:
                             criteria_rating -= results2[0][1]
+                            # print("After prof difficulty: " + str(criteria_rating))
                 
                 augmented_results.append((res, criteria_rating))
             
             augmented_results.sort(key = lambda x: x[1])
+            print(augmented_results)
+            print(len(conflict_times))
 
+            print("conflict checking")
             i = 0
             while i < len(conflict_times):
-                if day_overlap(conflict_times[i][2], augmented_results[0][0][7])
-                    and time_overlap(conflict_times[i][0], conflict_times[i][1], augmented_results[0][0][5], augmented_results[0][0][6]):
+                if day_overlap(conflict_times[i][2], augmented_results[0][0][7]) and time_overlap(conflict_times[i][0], conflict_times[i][1], augmented_results[0][0][5], augmented_results[0][0][6]):
                     augmented_results.pop(0)
                     if not augmented_results:
                         return []
                     i = 0
+                i += 1
 
+            print("passed conflict")
             optimal_schedule.append(augmented_results[0][0][0])
             conflict_times.append((augmented_results[0][0][5], augmented_results[0][0][6], augmented_results[0][0][7]))
+            # print(optimal_schedule)
+            # print(conflict_times)
 
-    return optimal_schedule
+    print("yay done!")
+    print(optimal_schedule)
+    return create_response(data={"data": optimal_schedule})
