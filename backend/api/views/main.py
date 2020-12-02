@@ -92,9 +92,10 @@ def search(name):
 def gpadata(category, name):
     if category == 'department':
         query = """
-            SELECT courseNumber, semesterTerm, name, avgGPA 
+            SELECT courseNumber, department, name, AVG(avgGPA) 
             FROM Course
             WHERE department = '{}' AND avgGPA > 0.0
+            GROUP BY courseNumber, department, name
         """.format(name)
 
         with sql_db.get_db().cursor() as cursor:
@@ -105,15 +106,15 @@ def gpadata(category, name):
             for res in results:
                 serialized_results.append({
                     "courseNumber": res[0],
-                    "semesterTerm": res[1],
-                    "name": res[2],
+                    "department": res[1],
+                    "courseName": res[2],
                     "avgGPA": res[3]
                 })
 
             return create_response(data={"data": serialized_results})
     elif category == 'course':
         query = """
-            SELECT pgpa.courseNumber, pgpa.courseName, pgpa.semesterTerm, p.name, pgpa.profGPA
+            SELECT pgpa.courseNumber, pgpa.courseDept, pgpa.courseName, pgpa.semesterTerm, p.name, pgpa.profGPA
             FROM ProfessorGPA pgpa JOIN Professor p ON pgpa.profID = p.ID
             WHERE pgpa.courseName = '{}' AND pgpa.profGPA > 0.0
         """.format(name)
@@ -126,10 +127,11 @@ def gpadata(category, name):
             for res in results:
                 serialized_results.append({
                     "courseNumber": res[0],
-                    "courseName": res[1],
-                    "semesterTerm": res[2],
-                    "name": res[3],
-                    "avgGPA": res[4]
+                    "department": res[1],
+                    "courseName": res[2],
+                    "semesterTerm": res[3],
+                    "name": res[4],
+                    "avgGPA": res[5]
                 })
 
             return create_response(data={"data": serialized_results})
@@ -165,6 +167,40 @@ def gpadata(category, name):
 
             return create_response(data={"data": serialized_results})
 
+@main.route('/getSection/<crn>')
+def get_section(crn):
+    query = """
+        SELECT 
+            sectionID, 
+            courseNumber, 
+            courseDept, 
+            semesterTerm, 
+            courseName, 
+            startTime,
+            endTime,
+            instructor
+        FROM Section
+        WHERE sectionID = {}
+    """.format(int(crn))
+
+    with sql_db.get_db().cursor() as cursor:
+        cursor.execute(query)
+        results = cursor.fetchall()
+
+        serialized_results = []
+        for res in results:
+            serialized_results.append({
+                "crn": res[0],
+                "courseNumber": res[1],
+                "department": res[2],
+                "semesterTerm": res[3],
+                "courseName": res[4],
+                "startTime": res[5],
+                "endTime": res[6],
+                "professorName": res[7]
+            })
+
+        return create_response(data={"data": serialized_results})
 
 def day_overlap(first, second):
     for day in first:

@@ -51,7 +51,7 @@ def load_profs():
 
 @manager.command
 def test_select():
-    query = "SELECT * FROM ProfessorGPA LIMIT 100;"
+    query = "SELECT * FROM Section LIMIT 10;"
     with sql_db.get_db().cursor() as cursor:
         cursor.execute(query)
         results = cursor.fetchall()
@@ -67,6 +67,13 @@ def test_select_section():
         results = cursor.fetchall()
         print(results)
 
+@manager.command
+def test_select_teaches():
+    query = "SELECT * FROM Teaches LIMIT 100;"
+    with sql_db.get_db().cursor() as cursor:
+        cursor.execute(query)
+        results = cursor.fetchall()
+        print(results)
 
 @manager.command
 def load_courses():
@@ -212,6 +219,57 @@ def load_sections():
         """)
 
 @manager.command
+def load_teaches():
+    with sql_db.get_db().cursor() as cursor:
+
+        cursor.execute("""
+            DROP TEMPORARY TABLE IF EXISTS sec_prof_joined;
+        """)
+
+        cursor.execute("""
+            DROP TEMPORARY TABLE IF EXISTS prof_name_fix;
+        """)
+
+        cursor.execute("""
+            CREATE TEMPORARY TABLE IF NOT EXISTS prof_name_fix
+            SELECT
+                *,
+                SUBSTRING(S.instructor, 1, 1) AS firstInitial,
+                SUBSTRING(S.instructor, 3, 30) AS lastname
+            FROM Section S
+        """)  
+
+        cursor.execute("""
+            CREATE TEMPORARY TABLE IF NOT EXISTS sec_prof_joined
+            SELECT
+                S.sectionID as sectionID,
+                P.ID as profID
+            FROM Professor P JOIN prof_name_fix S ON
+                P.name LIKE CONCAT(S.firstInitial, '%', S.lastname)
+        """)
+
+        test_query = 'SELECT * FROM sec_prof_joined LIMIT 20'
+        cursor.execute(test_query)
+        result = cursor.fetchall()
+        print(result)
+
+        cursor.execute(""" 
+            INSERT IGNORE INTO Teaches (sectionID, profID)
+            SELECT sectionID, profID
+            FROM sec_prof_joined
+        """)
+
+        cursor.execute("""
+            DROP TEMPORARY TABLE IF EXISTS sec_prof_joined;
+        """)
+
+        cursor.execute("""
+            DROP TEMPORARY TABLE IF EXISTS prof_name_fix;
+        """)     
+
+
+
+@manager.command
 def recreate_db():
     """
     Drops existing database and data and creates a fresh database.
@@ -230,9 +288,9 @@ def recreate_db():
             DROP TABLE IF EXISTS WorksFor;
         """)
 
-        cursor.execute("""
-            DROP TABLE IF EXISTS Teaches;
-        """)
+        # cursor.execute("""
+        #     DROP TABLE IF EXISTS Teaches;
+        # """)
     
     createschema()
 
