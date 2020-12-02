@@ -86,6 +86,21 @@ def load_courses():
     with sql_db.get_db().cursor() as cursor:
         cursor.executemany(stmt, courses)
 
+@manager.command
+def test_mongo():
+
+    client = mongo_db.get_db()
+    db = client['optiprof']
+    sched_collection = db['schedules']
+
+    sched_query = {
+        "name": "int_test"
+    }
+
+    output_sched = sched_collection.find(sched_query)
+
+    for s in output_sched:
+        print(s)
 
 @manager.command
 def load_prof_gpas():

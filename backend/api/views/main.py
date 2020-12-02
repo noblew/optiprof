@@ -88,6 +88,37 @@ def search(name):
 
         return create_response(data={"data": serialized_results})
 
+@main.route("/saveschedule/<sched_name>", methods=["POST"])
+def savesched(sched_name):
+    data = request.json
+    crn_strs = data['crns'].split(', ')
+    
+    crns = []
+    for c in crn_strs:
+        crns.append(int(c))
+
+    client = mongo_db.get_db()
+    db = client['optiprof']
+    sched_collection = db['schedules']
+
+    contains_query = {
+        "name": sched_name
+    }
+
+    if sched_collection.find_one(contains_query):
+        update_query = {
+            "$set": { "crns": crns }
+        }
+        sched_collection.update_one(contains_query, update_query)
+    else:
+        post = {
+            "name": sched_name,
+            "crns": crns
+        }
+        sched_collection.insert_one(post)
+
+    return create_response(data={}) 
+
 @main.route("/gpadata/<category>/<name>", methods=["GET"])
 def gpadata(category, name):
     if category == 'department':
