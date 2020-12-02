@@ -91,7 +91,7 @@ const apiWrapper = {
       return requestWrapper({
         path: '/saveschedule/' + key,
         method: 'POST',
-        data: {"crns": courses}
+        data: {"crns": JSON.stringify(courses)}
       })
     },
 

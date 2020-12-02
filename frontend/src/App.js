@@ -14,6 +14,7 @@ import {
   TabContent,
   TabPane
 } from 'reactstrap'
+import {ToastContainer, toast} from 'react-toastify'
 import classnames from 'classnames';
 
 import { DropdownSelector, GPAChart, SearchBar, CourseCard } from './components'
@@ -44,6 +45,10 @@ function App() {
   })
 
   useEffect(() => {}, [vizData])
+
+  const notify = message => {
+    toast(message)
+  }
 
   const toggleTab = tab => {
     if(activeTab !== tab) setActiveTab(tab);
@@ -120,13 +125,17 @@ function App() {
   }
 
   const optimizerSave = async (key) => {
-    // console.log(JSON.stringify(optimizedSched))
     let fetched = await apiWrapper.saveSchedule(key, optimizedSched)
-    console.log(fetched)
+    if (fetched.data.status === 200) {
+      notify("Successfully saved schedule")
+    } else {
+      notify("Failed to save schedule")
+    }
   } 
 
   return (
     <Container>
+      <ToastContainer />
       <Row>
         <Col>
           <h1 className="text-center mt-4 mb-4">Optiprof</h1>
