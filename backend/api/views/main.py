@@ -266,3 +266,39 @@ def generate_schedule(criteria):
             conflict_times.append((augmented_results[0][0][5], augmented_results[0][0][6], augmented_results[0][0][7]))
 
     return optimal_schedule
+
+
+@main.route('/getSection/<crn>')
+def get_section(crn):
+    query = """
+        SELECT 
+            sectionID, 
+            courseNumber, 
+            courseDept, 
+            semesterTerm, 
+            courseName, 
+            startTime,
+            endTime,
+            instructor
+        FROM Section
+        WHERE sectionID = {}
+    """.format(int(crn))
+
+    with sql_db.get_db().cursor() as cursor:
+        cursor.execute(query)
+        results = cursor.fetchall()
+
+        serialized_results = []
+        for res in results:
+            serialized_results.append({
+                "crn": res[0],
+                "courseNumber": res[1],
+                "department": res[2],
+                "semesterTerm": res[3],
+                "courseName": res[4],
+                "startTime": res[5],
+                "endTime": res[6],
+                "professorName": res[7]
+            })
+
+        return create_response(data={"data": serialized_results})

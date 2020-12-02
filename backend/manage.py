@@ -51,7 +51,7 @@ def load_profs():
 
 @manager.command
 def test_select():
-    query = "SELECT * FROM ProfessorGPA LIMIT 100;"
+    query = "SELECT * FROM Section LIMIT 10;"
     with sql_db.get_db().cursor() as cursor:
         cursor.execute(query)
         results = cursor.fetchall()
