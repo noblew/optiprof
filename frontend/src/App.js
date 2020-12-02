@@ -65,7 +65,11 @@ function App() {
 
   const submitProfSearch = async (searchVal) => {
     let fetched = await apiWrapper.searchRecords(searchVal)
-    setSearchProfResults(fetched.data.result.data)
+    if (fetched.data.result.data.length === 0) {
+      notify("Did not find any professors with that name")
+    } else {
+      setSearchProfResults(fetched.data.result.data)
+    }
   }
 
   const watchInsert = evt => {
@@ -77,11 +81,21 @@ function App() {
 
   const submitInsert = async (e) => {
     e.preventDefault()
-    await apiWrapper.insertRecord(insertInput)
+    let fetched = await apiWrapper.insertRecord(insertInput)
+    if (fetched.data.status === 200) {
+      notify("Successfully inserted professor")
+    } else {
+      notify("Failed to insert")
+    }
   }
 
   const submitDelete = async (deleteVal) => {
-    await apiWrapper.deleteRecord(parseInt(deleteVal, 10))
+    let fetched = await apiWrapper.deleteRecord(parseInt(deleteVal, 10))
+    if (fetched.data.status === 200) {
+      notify("Successfully deleted professor")
+    } else {
+      notify("Failed to delete")
+    }
   }
 
   const watchUpdate = evt => {
@@ -132,6 +146,17 @@ function App() {
       notify("Failed to save schedule")
     }
   } 
+
+  const optimizerLoad = async (key) => {
+    let fetched = await apiWrapper.loadSchedule(key)
+    const crnList = fetched.data.result.data
+    if (crnList.length === 0) {
+      notify("There are no courses to display in this schedule")
+    } else {
+      setOptimizedSched(crnList)
+      loadSchedData(crnList)
+    }
+  }
 
   return (
     <Container>
@@ -207,6 +232,7 @@ function App() {
               <SearchBar submitCallback={optimizerSave} btnText='Save' placeholderTxt="Save schedule as..." />
             </Col>
           </Row> : null}
+          <SearchBar submitCallback={optimizerLoad} btnText='Load' placeholderTxt="Load schedule..." />
         </TabPane>
 
         <TabPane tabId="2">
@@ -282,7 +308,7 @@ function App() {
           </Row>
           <Row>
             <Col>
-              <SearchBar submitCallback={submitDelete} btnColor="danger" btnText="Delete"/>
+              <SearchBar submitCallback={submitDelete} btnColor="danger" btnText="Delete" placeholderTxt="Delete by ID..."/>
             </Col>
           </Row>
 
