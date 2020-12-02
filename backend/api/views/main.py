@@ -307,3 +307,11 @@ def generate_schedule(criteria):
             conflict_times.append((augmented_results[0][0][5], augmented_results[0][0][6], augmented_results[0][0][7]))
 
     return create_response(data={"data": optimal_schedule})
+
+@main.route("/searchschedule/<key>", methods=["GET"])
+def searchschedule(key):
+    client = mongo_db.get_db()
+    db = client['optiprof']
+    sched_collection = db['schedules']
+    result = sched_collection.findOne({_id: "{}"}).format(key)
+    return create_response(data={"data": result})
