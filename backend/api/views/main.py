@@ -130,6 +130,18 @@ def searchschedule(key):
     else:
         return create_response(data={"data": []})
 
+@main.route("/scheduleincluding/<key>", methods=["GET"])
+def scheduleincluding(key):
+    client = mongo_db.get_db()
+    db = client['optiprof']
+    sched_collection = db['schedules']
+    result = sched_collection.find({"crns": key}, {"_id": 0, "crns": 0})
+    print(list(result))
+    if result:
+        return create_response(data={"data": result})
+    else:
+        return create_response(data={"data": []})
+
 @main.route("/gpadata/<category>/<name>", methods=["GET"])
 def gpadata(category, name):
     if category == 'department':
