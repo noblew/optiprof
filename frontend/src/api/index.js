@@ -103,6 +103,13 @@ const apiWrapper = {
       })
     },
 
+    async findSchedules(crn) {
+      return requestWrapper({
+        path: '/scheduleincluding/' + crn,
+        method: 'GET'
+      })
+    },
+
     async getCRNData(crn) {
       return requestWrapper({
         path: '/getSection/' + crn,

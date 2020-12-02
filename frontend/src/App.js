@@ -28,6 +28,7 @@ function App() {
   const [optimizeCategory, setOptimizeCategory] = useState("Optimize On...")
   const [optimizedSched, setOptimizedSched] = useState(null)
   const [optimizedFull, setOptimizedFull] = useState(null)
+  const [schedContaining, setSchedContaining] = useState(null)
   const [searchProfResults, setSearchProfResults] = useState([])
   const [insertInput, setInsertInput] = useState({
     recordId: null,
@@ -163,6 +164,16 @@ function App() {
     }
   }
 
+  const optimizerFind = async (key) => {
+    let fetched = await apiWrapper.findSchedules(key)
+    const keyList = fetched.data.result.data
+    if (keyList.length === 0) {
+      notify("No schedules containing CRN found")
+    } else {
+      setSchedContaining(keyList)
+    }
+  }
+
   return (
     <Container>
       <ToastContainer />
@@ -237,7 +248,21 @@ function App() {
               <SearchBar submitCallback={optimizerSave} btnText='Save' placeholderTxt="Save schedule as..." />
             </Col>
           </Row> : null}
-          <SearchBar submitCallback={optimizerLoad} btnText='Load' placeholderTxt="Load schedule..." />
+          <Row>
+            <Col>
+              <SearchBar submitCallback={optimizerLoad} btnText='Load' placeholderTxt="Load schedule..." />
+            </Col>
+          </Row>
+          <Row>
+            <Col>
+              <SearchBar submitCallback={optimizerFind} btnText='Find' placeholderTxt="Find schedules with CRN..." />
+            </Col>
+          </Row>
+          {schedContaining !== null ? <Row>
+            <Col>
+              <p>{schedContaining.toString()}</p>
+            </Col>
+          </Row> : null}
         </TabPane>
 
         <TabPane tabId="2">
